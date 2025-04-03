@@ -55,4 +55,10 @@ urlpatterns = [
     path('api/grades/', api.api_grades, name='api_grades'),
     path('api/assignments/', api.api_assignments, name='api_assignments'),
     path('api/news/', api.api_news, name='api_news'),
+
+    path('api/csrf/', api.csrf_cookie, name='csrf_cookie'),
+    path("api/login/", api.api_login, name="api_login"),
+    path('api/assignments/upcoming/', api.api_upcoming_deadlines, name='api_upcoming_deadlines'),
+    path('api/grades/recent/', api.api_recent_grades, name='api_recent_grades'),
+    path('api/news/latest/', api.api_latest_news, name='api_news_latest'),
 ]
