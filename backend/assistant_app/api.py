@@ -17,8 +17,9 @@ def csrf_cookie(request):
 @api_view(['POST'])
 @permission_classes([])
 def api_login(request):
-    if request.user.is_authenticated:
-        logout(request)
+    # print(request.user.is_authenticated)
+    # if request.user.is_authenticated:
+    #     logout(request)
     
     username = request.data.get('username')
     password = request.data.get('password')
@@ -29,6 +30,31 @@ def api_login(request):
         return Response({'status': 'ok', 'user': {'username': user.username}})
     
     return Response({'status': 'error', 'message': 'Invalid credentials'}, status=401)      
+
+
+@api_view(['POST'])
+@permission_classes([])
+def api_logout(request):
+    if request.user.is_authenticated:
+        logout(request)
+        return Response({'status': 'ok', 'message': 'Logged out successfully'})
+    return Response({'status': 'error', 'message': 'User not logged in'}, status=401)
+
+@api_view(['GET'])
+@permission_classes([])
+def get_user(request):
+    if request.user.is_authenticated:
+        return Response({
+            "isAuthenticated": True,
+            "user": {
+                "username": request.user.username,
+                "email": request.user.email,
+                "date_joined": request.user.date_joined,
+                "last_login": request.user.last_login
+            }
+        })
+    return Response({"isAuthenticated": False})
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -88,6 +114,7 @@ def api_recent_grades(request):
     return Response(data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def api_latest_news(request):
     news = News.objects.filter(is_published=True).order_by('-date_posted')[:3]
     return Response(NewsSerializer(news, many=True).data)
