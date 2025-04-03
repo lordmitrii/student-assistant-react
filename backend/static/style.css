@@ -1,0 +1,129 @@
+html {
+    font-family: Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.custom-container {
+    margin-top: 20px;
+}
+
+.custom-outline {
+    border: 1px solid #000000;
+    border-radius: 4px;
+}
+
+.tile {
+    min-height: 90px; 
+    display: flex;
+    align-items: center;
+    padding: 15px;
+}
+
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Navigation Bar */
+
+nav a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 15px;
+    border: 1px solid white;
+    border-radius: 4px;
+    margin-left: 10px;
+    transition: background-color 0.3s, color 0.3s;
+}
+nav a:hover {
+    background-color: white;
+    color: black;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand h3 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    padding: 10px 15px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+    background-color: white;
+    font-weight: bold;
+    border-radius: 8px 8px 0 0;
+}
+
+/* Buttons */
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.navbar-nav .nav-link.active {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar-nav {
+        margin-top: 10px;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+.google-icon {
+    height: 20px;
+    margin-right: 10px;
+}
+
+.profile-icon {
+    width: 100px; 
+    height: 100px; 
+    font-size: 2.5rem;
+}
+
+.account-icon {
+    width: 80px; 
+    height: 80px; 
+    font-size: 2rem;
+}
