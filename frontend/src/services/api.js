@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 function getCSRFToken() {
+ 
     const cookies = document.cookie.split(';');
+    console.log(cookies);
     for (let cookie of cookies) {
       const [name, value] = cookie.trim().split('=');
       if (name === 'csrftoken') {
@@ -23,9 +25,7 @@ function getCSRFToken() {
     const csrfToken = getCSRFToken();
     if (csrfToken && ['post', 'put', 'patch', 'delete'].includes(config.method.toLowerCase())) {
         config.headers['X-CSRFToken'] = csrfToken;
-        console.log('CSRF Token added to headers:', csrfToken);
-      }
-      
+      }      
     return config;
   });
 
@@ -35,7 +35,9 @@ export const fetchGrades = () => api.get('grades/');
 export const fetchAssignments = () => api.get('assignments/');
 export const fetchNews = () => api.get('news/');
 export const getCSRF = () => api.get('csrf/');
+export const fetchUser = () => api.get("user/");
 export const login = (username, password) =>
     api.post('login/', { username, password });
+export const logout = () => api.post('logout/');
 
 export default api;

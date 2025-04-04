@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import {getCSRF, login} from '../services/api';
+import {login} from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const Login = ({ setUser }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
 
   const handleSubmit = async (e) => {
@@ -12,17 +14,15 @@ const Login = ({ setUser }) => {
     setError('');
 
     try {
-      await getCSRF();
-
       const response = await login(username, password);
 
       if (response.data.status === 'ok') {
         setUser(response.data.user);
+        navigate('/');
       }
 
-      window.location.href = '/';
     } catch (err) {
-        console.error('Login error:', err);
+      console.error(err);
       setError('Invalid credentials');
     }
   };

@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import api from '../services/api';
 
 
-const Home = () => {
+const Home = ( {user} ) => {
   const [deadlines, setDeadlines] = useState([]);
   const [grades, setGrades] = useState([]);
   const [news, setNews] = useState([]);
+
 
   useEffect(() => {
     api.get('/assignments/upcoming/').then(res => setDeadlines(res.data));
@@ -17,6 +18,8 @@ const Home = () => {
   return (
     
     <div className="row">
+      <div className="col-12 mb-3">
+      </div>
       {/* Deadlines */}
       <div className="col-md-6 mb-3">
         <div className="card shadow-lg h-100">
