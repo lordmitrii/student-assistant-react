@@ -55,13 +55,6 @@ def get_user(request):
     return Response({"isAuthenticated": False})
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def api_courses(request):
-    courses = Course.objects.filter(user=request.user)
-    serializer = CourseSerializer(courses, many=True)
-    return Response(serializer.data)
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -88,12 +81,51 @@ def api_latest_news(request):
     news = News.objects.filter(is_published=True).order_by('-date_posted')[:3]
     return Response(NewsSerializer(news, many=True).data)
 
+######################################### Courses endpoints #########################################
+@api_view(['GET', 'POST', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def api_courses(request, course_slug=None):
+    if request.method == 'GET':
+        if course_slug:
+            course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
+            data = CourseSerializer(course).data
+            return Response(data)
+        else:
+            courses = Course.objects.filter(user=request.user).annotate(
+                total_weighted_grades=Sum(F('grades__grade') * F('grades__credits'), output_field=FloatField()),
+                total_credits=Sum('grades__credits', output_field=FloatField()),
+                due_assignments=Count('assignments', filter=Q(assignments__is_done=False), distinct=True)
+            ).annotate(
+                average_grade=ExpressionWrapper((F('total_weighted_grades') / F('total_credits')), output_field=FloatField())
+            )
+            data = CourseSerializer(courses, many=True).data
+            return Response(data)
+
+    elif request.method == 'POST':
+        course = CourseSerializer(data=request.data)
+        if course.is_valid():
+            course.save(user=request.user)
+            return Response(course.data, status=201)
+        return Response(course.errors, status=400)
+
+    elif request.method == 'PATCH':
+        course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
+        serializer = CourseSerializer(course, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
+        course.delete()
+        return Response(status=204)
+
 
 ######################################## Grades endpoints #########################################
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_grades(request, course_slug=None):
-    # If a course slug is provided, filter grades for that specific course
     if course_slug:
         course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
         course_grades = Grade.objects.filter(course=course)
@@ -144,3 +176,27 @@ def api_grades(request, course_slug=None):
             'grades': grades_by_course,
             'average': overall_average,
         })
+    
+@api_view(['POST', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def api_grades_modify(request, course_slug=None, grade_id=None):
+    if request.method == 'POST':
+        course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
+        grade = GradeSerializer(data=request.data)
+        if grade.is_valid():
+            grade.save(course=course)
+            return Response(grade.data, status=201)
+        return Response(grade.errors, status=400)
+
+    elif request.method == 'PATCH':
+        grade = get_object_or_404(Grade, id=grade_id)
+        serializer = GradeSerializer(grade, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        grade = get_object_or_404(Grade, id=grade_id)
+        grade.delete()
+        return Response(status=204)

@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
 
 const Grades = () => {
-  const [gradesByCourse, setGradesByCourse] = useState({});
-  const [courseGrades, setCourseGrades] = useState([]);
-  const [overallAverage, setOverallAverage] = useState(null);
-  const [courseAverage, setCourseAverage] = useState(null);
+  const [grades, setGrades] = useState({});
+  const [average, setAverage] = useState(null);
   const [allGradesView, setAllGradesView] = useState(true); 
   const { courseSlug } = useParams(); 
   const navigate = useNavigate();
@@ -15,14 +13,14 @@ const Grades = () => {
     if (courseSlug) {
       setAllGradesView(false);
       api.get(`/courses/${courseSlug}/grades/`).then((res) => {
-        setCourseGrades(res.data.grades || []);
-        setCourseAverage(res.data.average || null);
+        setGrades(res.data.grades || []);
+        setAverage(res.data.average || null);
       });
     } else {
       setAllGradesView(true);
       api.get(`/courses/grades/`).then((res) => {
-        setGradesByCourse(res.data.grades_by_course || {});
-        setOverallAverage(res.data.overall_average || null);
+        setGrades(res.data.grades || {});
+        setAverage(res.data.average || null);
       });
     }
   }, [courseSlug]);
@@ -35,6 +33,30 @@ const Grades = () => {
     }
   };
 
+  const handleDelete = async (gradeId) => {
+    if (!window.confirm("Are you sure you want to delete this grade?")) return;
+  
+    try {
+      await api.delete(`/courses/grades/${gradeId}/`);
+  
+      if (courseSlug) {
+        const res = await api.get(`/courses/${courseSlug}/grades/`);
+        setGrades(res.data.grades || []);
+        setAverage(res.data.average || null);
+      } else {
+        const res = await api.get(`/courses/grades/`);
+        setGrades(res.data.grades || {});
+        setAverage(res.data.average || null);
+      }
+  
+    } catch (err) {
+      console.error("Failed to delete grade:", err);
+      alert("Something went wrong while deleting the grade.");
+    }
+  };
+  
+  
+
   return (
     <div className="container mt-4">
       {/* Header buttons and average */}
@@ -45,11 +67,11 @@ const Grades = () => {
           </button>
         </div>
         <div className="col-md-2 text-center custom-outline mt-1 mb-1">
-          {allGradesView && overallAverage !== null && (
-            <>Average grade: {overallAverage.toFixed(2)}</>
+          {allGradesView && average !== null && (
+            <>Average grade: {average.toFixed(2)}</>
           )}
-          {!allGradesView && courseAverage !== null && (
-            <>Average grade: {courseAverage.toFixed(2)}</>
+          {!allGradesView && average !== null && (
+            <>Average grade: {average.toFixed(2)}</>
           )}
         </div>
         <div className="col-md-5 text-end">
@@ -64,15 +86,23 @@ const Grades = () => {
 
       {/* Grade display */}
       {allGradesView ? (
-        Object.keys(gradesByCourse).length ? (
-          Object.entries(gradesByCourse).map(([courseName, grades], i) =>
+        Object.keys(grades).length ? (
+          Object.entries(grades).map(([courseName, grades], i) =>
             grades.length ? (
               <div className="card mb-3" key={i}>
                 <div className="card-header">
                   <h5 className="mb-0">{courseName}</h5>
                 </div>
                 <div className="card-body">
-                  <Accordion grades={grades} parentId={`acc-${i}`} courseSlug={null} />
+                <div className="accordion" id={`acc-${i}`}>
+                  <Accordion
+                    grades={grades}
+                    parentId={`acc-${i}`}
+                    courseSlug={null}
+                    handleDelete={handleDelete}
+                  />
+
+                  </div>
                 </div>
               </div>
             ) : null
@@ -80,9 +110,15 @@ const Grades = () => {
         ) : (
           <p className="text-muted">No grades available.</p>
         )
-      ) : courseGrades.length ? (
+      ) : grades.length ? (
         <div className="accordion" id="gradesAccordion">
-          <Accordion grades={courseGrades} parentId="gradesAccordion" courseSlug={courseSlug} />
+          <Accordion
+            grades={grades}
+            parentId="gradesAccordion"
+            courseSlug={courseSlug}
+            handleDelete={handleDelete}
+          />
+
         </div>
       ) : (
         <p className="text-muted">No grades available for this course.</p>
@@ -91,7 +127,7 @@ const Grades = () => {
   );
 };
 
-const Accordion = ({ grades, parentId, courseSlug }) => {
+const Accordion = ({ grades, parentId, courseSlug, handleDelete }) => {
   return grades.map((grade, index) => {
     const collapseId = `${parentId}-collapse-${index}`;
     const headingId = `${parentId}-heading-${index}`;
@@ -125,25 +161,15 @@ const Accordion = ({ grades, parentId, courseSlug }) => {
             </p>
             <p>Note: {grade.note}</p>
             <div className="mt-3 d-flex gap-2">
-              <button
+              <Link
                 className="btn btn-sm btn-warning"
-                onClick={() => {
-                  const path = courseSlug
-                    ? `/courses/${courseSlug}/grades/${grade.id}/edit/`
-                    : `/courses/${courseSlug}/grades/edit/`;
-                  window.location.href = path;
-                }}
+                to={`/courses/grades/${grade.id}/edit`}
               >
                 Edit
-              </button>
+              </Link>
               <button
-                className="btn btn-sm btn-danger"
-                onClick={() => {
-                  const path = courseSlug
-                    ? `/grades/delete/${courseSlug}/${grade.id}`
-                    : `/grades/delete/${grade.id}`;
-                  window.location.href = path;
-                }}
+                className="btn btn-danger btn-sm"
+                onClick={() => handleDelete(grade.id)}
               >
                 Delete
               </button>

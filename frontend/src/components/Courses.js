@@ -14,6 +14,18 @@ const Courses = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const handleDelete = async (courseSlug) => {
+    if (!window.confirm("Are you sure you want to delete this course?")) return;
+
+    try {
+      await api.delete(`/courses/${courseSlug}/modify`);
+      setCourses((prev) => prev.filter((c) => c.course_slug !== courseSlug));
+    } catch (err) {
+      console.error("Failed to delete course:", err);
+      alert("Something went wrong while deleting the course.");
+    }
+  };
+
   return (
     <div className="container mt-4">
       {/* Buttons */}
@@ -65,29 +77,29 @@ const Courses = () => {
                     </div>
                     <div className="col-md-6 text-end">
                       <Link
-                        to={`/courses/${course.slug}/grades`}
+                        to={`/courses/${course.course_slug}/grades`}
                         className="btn btn-info btn-sm me-2"
                       >
                         View Grades
                       </Link>
                       <Link
-                        to={`/courses/${course.slug}/assignments`}
+                        to={`/courses/${course.course_slug}/assignments`}
                         className="btn btn-info btn-sm me-2"
                       >
                         View Assignments
                       </Link>
                       <Link
-                        to={`/courses/${course.slug}/edit`}
+                        to={`/courses/${course.course_slug}/edit`}
                         className="btn btn-warning btn-sm me-2"
                       >
                         Edit
                       </Link>
-                      <Link
-                        to={`/courses/${course.slug}/delete`}
+                      <button
                         className="btn btn-danger btn-sm"
+                        onClick={() => handleDelete(course.course_slug)}
                       >
                         Delete
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 </div>

@@ -82,7 +82,7 @@ const Account = ({ user }) => {
               icon="bi-clipboard-check"
               title="Assignments"
               text="Track your upcoming deadlines"
-              link="/assignments"
+              link="/courses/assignments"
             />
           </div>
 
@@ -99,7 +99,7 @@ const Account = ({ user }) => {
                 Check your academic performance and GPA
               </p>
               <div className="d-grid">
-                <Link to="/grades" className="btn btn-primary">
+                <Link to="/courses/grades" className="btn btn-primary">
                   View Grades <i className="bi bi-arrow-right ms-2" />
                 </Link>
               </div>

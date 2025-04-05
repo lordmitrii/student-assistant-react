@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
-import { getCSRF, fetchUser } from "./services/api";
 import Layout from "./components/Layout";
 import Login from "./components/Login";
 import Logout from "./components/Logout";
 import Home from "./components/Home";
 import Courses from "./components/Courses";
+import CoursesAdd from "./components/CoursesAdd";
+import CoursesEdit from "./components/CoursesEdit";
 import Grades from "./components/Grades";
 import Assignments from "./components/Assignments";
 import Account from "./components/Account";
@@ -38,7 +38,12 @@ function App() {
             <Route path="/account" element={<Account user={user}/>} />
 
             <Route path="/courses" element={<Courses />} />
+            <Route path="/courses/add" element={<CoursesAdd />} />
+            <Route path="/courses/:courseSlug/edit" element={<CoursesEdit />} />
+            <Route path="/courses/:courseSlug/delete" element={<Courses />} />
+
             <Route path="/courses/grades" element={<Grades />} />
+            <Route path="/courses/:courseSlug/grades" element={<Grades />} />
             <Route path="/courses/assignments" element={<Assignments />} />
           </Route>
 
