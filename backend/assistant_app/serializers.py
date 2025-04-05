@@ -7,9 +7,20 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class GradeSerializer(serializers.ModelSerializer):
+    assignment_name = serializers.SerializerMethodField()
+    course_name = serializers.SerializerMethodField()
     class Meta:
         model = Grade
         fields = '__all__'
+
+
+    def get_course_name(self, obj):
+        return obj.course.course_name if obj.course else None
+    
+    def get_assignment_name(self, obj):
+        if hasattr(obj, 'assignment'):
+            return obj.assignment.name
+        return None
 
 class AssignmentSerializer(serializers.ModelSerializer):
     class Meta:

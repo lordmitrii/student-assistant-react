@@ -50,11 +50,21 @@ urlpatterns = [
     path("ajax/assignments/<int:assignment_id>/complete/", views.mark_assignment_complete, name="ajax_assignment_complete"),
 
 
+    # API endpoints
     path('api/courses/', api.api_courses, name='api_courses'),
-    path('api/courses/<slug:slug>/', api.api_course_detail, name='api_course_detail'),
-    path('api/grades/', api.api_grades, name='api_grades'),
-    path('api/assignments/', api.api_assignments, name='api_assignments'),
-    path('api/news/', api.api_news, name='api_news'),
+
+    path('api/courses/grades/', api.api_grades, name="api_all_grades"),
+    # path("api/courses/grades/add/", api.api_add_grade, name="api_add_grade"),
+    # path("api/courses/grades/<int:grade_id>/edit/", api.api_edit_grade, name="api_edit_grade"),
+    # path('api/courses/grades/<int:grade_id>/delete/', api.api_delete_grade, name='api_delete_grade'),
+
+    # In case we view grades for a specific course
+    path("api/courses/<slug:course_slug>/grades/", api.api_grades, name="api_grades_for_course"),
+    # path("api/courses/<slug:course_slug>/grades/add/", api.api_add_grade, name="api_add_grade_for_course"),
+    # path("api/courses/<slug:course_slug>/grades/<int:grade_id>/edit/", api.api_edit_grade, name="api_edit_grade_for_course"),
+    # path('api/courses/<slug:course_slug>/grades/<int:grade_id>/delete/', api.api_delete_grade, name='api_celete_grade_for_course'),
+
+
 
     path('api/csrf/', api.csrf_cookie, name='csrf_cookie'),
     path('api/user/', api.get_user, name='get_user'),

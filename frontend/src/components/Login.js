@@ -1,34 +1,29 @@
-import React, { useState } from 'react';
-import {login} from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
-const Login = ({ setUser }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const Login = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const { loginUser } = useAuth();
   const navigate = useNavigate();
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
-    try {
-      const response = await login(username, password);
+    const result = await loginUser(username, password);
 
-      if (response.data.status === 'ok') {
-        setUser(response.data.user);
-        navigate('/');
-      }
-
-    } catch (err) {
-      console.error(err);
-      setError('Invalid credentials');
+    if (result.success) {
+      navigate("/");
+    } else {
+      setError(result.message || "Invalid credentials");
     }
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: '500px' }}>
+    <div className="container mt-5" style={{ maxWidth: "500px" }}>
       <h3 className="mb-4">Log In</h3>
       {error && <div className="alert alert-danger">{error}</div>}
 
@@ -39,7 +34,7 @@ const Login = ({ setUser }) => {
             type="text"
             className="form-control"
             value={username}
-            onChange={e => setUsername(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)}
             required
           />
         </div>
@@ -49,11 +44,13 @@ const Login = ({ setUser }) => {
             type="password"
             className="form-control"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
-        <button className="btn btn-primary" type="submit">Log In</button>
+        <button className="btn btn-primary" type="submit">
+          Log In
+        </button>
       </form>
     </div>
   );
