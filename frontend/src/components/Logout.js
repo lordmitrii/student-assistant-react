@@ -1,16 +1,16 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
+import { logout } from "../services/api";
 
-const Logout = () => {
-  const { logoutUser } = useAuth();
+const Logout = ({ setUser }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    logoutUser().then(() => {
+    logout().then(() => {
+      setUser(null); 
       navigate("/login");
     });
-  }, [logoutUser, navigate]);
+  }, [navigate, setUser]);
 
   return <p className="text-center mt-5">Logging out...</p>;
 };

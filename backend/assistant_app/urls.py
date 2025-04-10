@@ -56,7 +56,7 @@ urlpatterns = [
 
 
     path('api/courses/grades/', api.api_grades, name="api_all_grades"),
-    path("api/courses/grades/<int:grade_id>/", api.api_grades_modify, name="api_grade"),
+    path("api/courses/grades/modify/", api.api_grades_modify, name="api_grade"),
     # path("api/courses/grades/add/", api.api_add_grade, name="api_add_grade"),
     # path("api/courses/grades/<int:grade_id>/edit/", api.api_edit_grade, name="api_edit_grade"),
     # path('api/courses/grades/<int:grade_id>/delete/', api.api_delete_grade, name='api_delete_grade'),

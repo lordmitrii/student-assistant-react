@@ -1,21 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
+import { login } from "../services/api";
 
-const Login = () => {
+const Login = ({ setUser }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { loginUser } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    const result = await loginUser(username, password);
+    const result = await login(username, password);
 
-    if (result.success) {
+    if (result.status === 200) {
+      setUser(result.data.user); 
       navigate("/");
     } else {
       setError(result.message || "Invalid credentials");

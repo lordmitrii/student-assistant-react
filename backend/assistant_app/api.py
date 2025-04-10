@@ -179,13 +179,16 @@ def api_grades(request, course_slug=None):
     
 @api_view(['POST', 'PATCH', 'DELETE'])
 @permission_classes([IsAuthenticated])
-def api_grades_modify(request, course_slug=None, grade_id=None):
+def api_grades_modify(request, grade_id=None):
     if request.method == 'POST':
+        course_slug = request.data.get('course_slug')
         course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
+        
         grade = GradeSerializer(data=request.data)
         if grade.is_valid():
             grade.save(course=course)
             return Response(grade.data, status=201)
+        print(grade.errors)
         return Response(grade.errors, status=400)
 
     elif request.method == 'PATCH':
