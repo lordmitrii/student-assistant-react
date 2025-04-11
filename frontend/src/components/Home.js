@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
-const Home = ({ user }) => {
+const Home = () => {
   const [deadlines, setDeadlines] = useState([]);
   const [grades, setGrades] = useState([]);
   const [news, setNews] = useState([]);
+  const { user } = useAuth();
 
   useEffect(() => {
     api.get("/news/latest/").then((res) => setNews(res.data));
@@ -23,31 +25,34 @@ const Home = ({ user }) => {
             <h5 className="mb-0">Upcoming Deadlines</h5>
           </div>
           <div className="card-body">
-            {deadlines.length ? (
-              <ul className="list-group">
-                {deadlines.map((d) => (
-                  <li
-                    key={d.id}
-                    className="list-group-item d-flex justify-content-between align-items-center"
-                  >
-                    <div>
-                      <strong>{d.name}</strong>
-                      <div className="text-muted">Course: {d.course_name}</div>
-                      <div className="text-muted">
-                        Graded: {d.graded ? "✅ Yes" : "❌ No"}
-                      </div>
-                    </div>
-                    <span
-                      className={`badge ${getDeadlineBadge(d.remaining_days)}`}
+            {user ? (
+              deadlines.length ? (
+                <ul className="list-group">
+                  {deadlines.map((d) => (
+                    <li
+                      key={d.id}
+                      className="list-group-item d-flex justify-content-between align-items-center"
                     >
-                      {new Date(d.deadline).toLocaleString()}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-muted">No upcoming deadlines.</p>
-            )}
+                      <div>
+                        <strong>{d.name}</strong>
+                        <div className="text-muted">Course: {d.course_name}</div>
+                        <div className="text-muted">
+                          Graded: {d.graded ? "✅ Yes" : "❌ No"}
+                        </div>
+                      </div>
+                      <span
+                        className={`badge ${getDeadlineBadge(d.remaining_days)}`}
+                      >
+                        {new Date(d.deadline).toLocaleString()}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted">No upcoming deadlines.</p>
+              )) : (
+              <p className="text-muted">Log in to see your upcoming deadlines.</p>
+              )}
           </div>
         </div>
       </div>

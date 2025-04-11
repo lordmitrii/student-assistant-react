@@ -1,7 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
-const Account = ({ user }) => {
+const Account = () => {
+  const { user } = useAuth();
   if (!user) {
     return (
       <p className="text-center mt-5 text-muted">
@@ -34,7 +36,7 @@ const Account = ({ user }) => {
                 <div
                   className="rounded-circle bg-primary text-white d-inline-flex justify-content-center align-items-center profile-icon"
                   style={{ width: "80px", height: "80px", fontSize: "36px" }}
-                >
+                > 
                   {user.username.slice(0, 1).toUpperCase()}
                 </div>
               </div>

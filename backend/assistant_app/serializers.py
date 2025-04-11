@@ -32,9 +32,16 @@ class GradeSerializer(serializers.ModelSerializer):
         return None
 
 class AssignmentSerializer(serializers.ModelSerializer):
+    grade_val = serializers.SerializerMethodField(required=False)
     class Meta:
         model = Assignment
         fields = '__all__'
+        read_only_fields = ['grade_val']
+
+    def get_grade_val(self, obj):
+        if hasattr(obj, 'grade'):
+            return obj.grade.grade
+        return None
 
 class NewsSerializer(serializers.ModelSerializer):
     class Meta:

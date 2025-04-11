@@ -31,6 +31,7 @@ def api_login(request):
     
     return Response({'status': 'error', 'message': 'Invalid credentials'}, status=401)      
 
+
 @api_view(['POST'])
 @permission_classes([])
 def api_logout(request):
@@ -38,6 +39,7 @@ def api_logout(request):
         logout(request)
         return Response({'status': 'ok', 'message': 'Logged out successfully'})
     return Response({'status': 'error', 'message': 'User not logged in'}, status=401)
+
 
 @api_view(['GET'])
 @permission_classes([])
@@ -82,6 +84,8 @@ def api_latest_news(request):
     return Response(NewsSerializer(news, many=True).data)
 
 ######################################### Courses endpoints #########################################
+
+
 @api_view(['GET', 'POST', 'PATCH', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def api_courses(request, course_slug=None):
@@ -180,6 +184,76 @@ def api_grades(request, course_slug=None):
 @api_view(['POST', 'PATCH', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def api_grades_modify(request, grade_id=None):
+    if request.method == 'POST':
+        course_slug = request.data.get('course_slug')
+        course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
+        
+        grade = GradeSerializer(data=request.data)
+        if grade.is_valid():
+            grade.save(course=course)
+            return Response(grade.data, status=201)
+        print(grade.errors)
+        return Response(grade.errors, status=400)
+
+    elif request.method == 'PATCH':
+        grade = get_object_or_404(Grade, id=grade_id)
+        serializer = GradeSerializer(grade, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        grade = get_object_or_404(Grade, id=grade_id)
+        grade.delete()
+        return Response(status=204)
+    
+
+######################################### Assignments endpoints #########################################
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_assignments(request, course_slug=None):
+    if course_slug:
+        course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
+        course_assignments = Assignment.objects.filter(course=course)
+        due_assignments = course_assignments.count()
+
+
+        data = AssignmentSerializer(course_assignments, many=True).data
+        return Response({
+            'assignments': data,
+            'dueCount': due_assignments
+        })
+    
+    # If no course slug is provided, show all assignments for the user
+    else:
+        assignments_exist = False
+        assignments_by_course = {}
+        courses = Course.objects.filter(user=request.user)
+        due_assignments = Assignment.objects.filter(course__user=request.user, is_done=False).count()
+        
+        # Check if any course has assignments and prepare the data for rendering
+        for course in courses:
+            if course.assignments.exists():
+                assignments_exist = True
+                break
+
+        if assignments_exist:
+            for course in courses:
+                course_assignments = Assignment.objects.filter(course=course)
+                assignments_by_course[course.course_slug] = AssignmentSerializer(course_assignments, many=True).data
+
+        
+
+        return Response({
+            'assignments': assignments_by_course,
+            'dueCount': due_assignments,
+        })
+    
+@api_view(['POST', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def api_assignments_modify(request, grade_id=None):
     if request.method == 'POST':
         course_slug = request.data.get('course_slug')
         course = get_object_or_404(Course, course_slug=course_slug, user=request.user)

@@ -1,6 +1,10 @@
 import { Link, Outlet } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
-const Layout = ({ user }) => (
+const Layout = () => {
+  const { user } = useAuth();
+  
+  return ( 
   <>
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container-fluid">
@@ -51,6 +55,6 @@ const Layout = ({ user }) => (
       <Outlet />
     </main>
   </>
-);
+)};
 
 export default Layout;
