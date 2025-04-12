@@ -44,7 +44,6 @@ def api_login(request):
 @api_view(['POST'])
 @permission_classes([])
 def api_logout(request):
-    print(request.user)
     if request.user.is_authenticated:
         logout(request)
         return Response({'status': 'ok', 'message': 'Logged out successfully'})
@@ -286,7 +285,6 @@ def api_assignments_modify(request, assignment_id=None):
         if assignment.is_valid():
             assignment.save(course=course)
             return Response(assignment.data, status=201)
-        print(assignment.errors)
         return Response(assignment.errors, status=400)
 
     elif request.method == 'PATCH':

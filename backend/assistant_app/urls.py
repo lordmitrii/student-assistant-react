@@ -1,3 +1,5 @@
+from django.shortcuts import redirect
+from django.conf import settings
 from django.urls import path
 from assistant_app import views, api
 
@@ -49,7 +51,7 @@ urlpatterns = [
     path('ajax/get_assignments/', views.get_assignments, name='ajax_get_assignments'),
     path('ajax/assignments/<int:assignment_id>/complete/', views.mark_assignment_complete, name='ajax_assignment_complete'),
 
-
+    path('redirect-to-home/', lambda request: redirect(settings.FRONTEND_URL), name='redirect_to_home'),
     # API endpoints
     path('api/courses/', api.api_courses, name='api_courses'),
     path('api/courses/<course_slug>/modify', api.api_courses, name='api_courses_slug'),

@@ -1,6 +1,9 @@
 import Layout from "./components/Layout";
 import Login from "./components/Login";
 import Logout from "./components/Logout";
+import Register from "./components/Register";
+import About from "./components/About";
+import Calculator from "./components/Calculator";
 import Home from "./components/Home";
 import Courses from "./components/Courses";
 import CoursesAdd from "./components/CoursesAdd";
@@ -27,6 +30,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/logout" element={<Logout />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/calculator" element={<Calculator />} />
 
             {/* Private Routes */}
             <Route element={<PrivateRoute />}>

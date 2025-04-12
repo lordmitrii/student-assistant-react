@@ -1,5 +1,7 @@
 import { Link, Outlet } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import '../styles/style.css';
+
 
 const Layout = () => {
   const { user } = useAuth();

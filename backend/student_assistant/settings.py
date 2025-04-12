@@ -12,12 +12,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 MEDIA_DIR = BASE_DIR / "media"
+load_dotenv()
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,6 +27,7 @@ MEDIA_DIR = BASE_DIR / "media"
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-4u@hnw)bcfu^z5=d6-qemyiq874knecxc@9=tl*r=!cw+e7qwx"
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -68,9 +71,10 @@ MIDDLEWARE = [
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000", 
     "http://127.0.0.1:3000"
-]
+] + FRONTEND_URL.split(',')
+
+
 
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS 
 
@@ -124,8 +128,8 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Login/logout URLs
-LOGIN_REDIRECT_URL = 'assistant_app:home'
-LOGOUT_REDIRECT_URL = 'assistant_app:home'
+LOGIN_REDIRECT_URL = '/redirect-to-home/'
+LOGOUT_REDIRECT_URL = '/redirect-to-home/'
 
 TEMPLATES = [
     {
