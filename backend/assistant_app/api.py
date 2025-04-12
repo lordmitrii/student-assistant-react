@@ -234,13 +234,13 @@ def api_assignments(request, course_slug=None):
     if course_slug:
         course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
         course_assignments = Assignment.objects.filter(course=course)
-        due_assignments = Assignment.objects.filter(course=course, is_done=False).count()
+        due_assignments_count = Assignment.objects.filter(course=course, is_done=False).count()
         
 
         data = AssignmentSerializer(course_assignments, many=True).data
         return Response({
             'assignments': data,
-            'dueCount': due_assignments
+            'due_count': due_assignments_count
         })
     
     # If no course slug is provided, show all assignments for the user
@@ -248,8 +248,8 @@ def api_assignments(request, course_slug=None):
         assignments_exist = False
         assignments_by_course = {}
         courses = Course.objects.filter(user=request.user)
-        due_assignments = Assignment.objects.filter(course__user=request.user, is_done=False).count()
-        
+        due_assignments_count = Assignment.objects.filter(course__user=request.user, is_done=False).count()
+
         # Check if any course has assignments and prepare the data for rendering
         for course in courses:
             if course.assignments.exists():
@@ -261,11 +261,10 @@ def api_assignments(request, course_slug=None):
                 course_assignments = Assignment.objects.filter(course=course)
                 assignments_by_course[course.course_slug] = AssignmentSerializer(course_assignments, many=True).data
 
-        
 
         return Response({
             'assignments': assignments_by_course,
-            'dueCount': due_assignments,
+            'due_count': due_assignments_count,
         })
     
 @api_view(['GET', 'POST', 'PATCH', 'DELETE'])

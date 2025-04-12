@@ -67,16 +67,13 @@ const Grades = () => {
           </button>
         </div>
         <div className="col-md-2 text-center custom-outline mt-1 mb-1">
-          {allGradesView && average !== null && (
-            <>Average grade: {average.toFixed(2)}</>
-          )}
-          {!allGradesView && average !== null && (
+          {average !== null && (
             <>Average grade: {average.toFixed(2)}</>
           )}
         </div>
         <div className="col-md-5 text-end">
           <button
-            className="btn btn-secondary custom-outline me-4"
+            className="btn btn-secondary custom-outline"
             onClick={() => navigate("/courses")}
           >
             Back to Courses

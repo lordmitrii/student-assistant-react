@@ -14,13 +14,13 @@ const Assignments = () => {
       setAllAssignmentsView(false);
       api.get(`/courses/${courseSlug}/assignments/`).then((res) => {
         setAssignments(res.data.assignments || []);
-        setDueCount(res.data.dueCount || null);
+        setDueCount(res.data.due_count || null);
       });
     } else {
       setAllAssignmentsView(true);
       api.get(`/courses/assignments/`).then((res) => {
         setAssignments(res.data.assignments || {});
-        setDueCount(res.data.dueCount || null);
+        setDueCount(res.data.due_count || null);
       });
     }
   }, [courseSlug]);
@@ -42,11 +42,11 @@ const Assignments = () => {
       if (courseSlug) {
         const res = await api.get(`/courses/${courseSlug}/assignments/`);
         setAssignments(res.data.assignments || []);
-        setDueCount(res.data.dueCount || null);
+        setDueCount(res.data.due_count || null);
       } else {
         const res = await api.get(`/courses/assignments/`);
         setAssignments(res.data.assignments || {});
-        setDueCount(res.data.dueCount || null);
+        setDueCount(res.data.due_count || null);
       }
   
     } catch (err) {
@@ -63,11 +63,11 @@ const Assignments = () => {
       if (courseSlug) {
         const res = await api.get(`/courses/${courseSlug}/assignments/`);
         setAssignments(res.data.assignments || []);
-        setDueCount(res.data.dueCount || null);
+        setDueCount(res.data.due_count || null);
       } else {
         const res = await api.get(`/courses/assignments/`);
         setAssignments(res.data.assignments || {});
-        setDueCount(res.data.dueCount || null);
+        setDueCount(res.data.due_count || null);
       }
   
     } catch (err) {
@@ -88,61 +88,99 @@ const Assignments = () => {
           </button>
         </div>
         <div className="col-md-2 text-center custom-outline mt-1 mb-1">
-          {allAssignmentsView && dueCount !== null && (
-            <>Due assignment: {dueCount}</>
-          )}
-          {!allAssignmentsView && dueCount !== null && (
-            <>Due assignment: {dueCount}</>
+          {dueCount !== null && (
+            <>Due assignments: {dueCount}</>
           )}
         </div>
         <div className="col-md-5 text-end">
           <button
-            className="btn btn-secondary custom-outline me-4"
+            className="btn btn-secondary custom-outline "
             onClick={() => navigate("/courses")}
           >
             Back to Courses
           </button>
         </div>
       </div>
-
       {/* Assignment display */}
       {allAssignmentsView ? (
         Object.keys(assignments).length ? (
-          Object.entries(assignments).map(([courseSlug, assignments], i) =>
-            assignments.length ? (
-              <div className="card mb-3" key={i}>
+          <>
+            {/* Pending Assignments */}
+            {Object.entries(assignments).map(([courseSlug, assignments], i) =>
+              assignments.filter((assignment) => !assignment.is_done).length ? (
+                <div className="card mb-3" key={`pending-${i}`}>
+                  <div className="card-header">
+                    <h5 className="mb-0">{assignments[0].course_name}</h5>
+                  </div>
+                  <div className="card-body">
+                    <div className="accordion" id={`acc-pending-${i}`}>
+                      <Accordion
+                        assignments={assignments.filter((assignment) => !assignment.is_done)}
+                        parentId={`acc-pending-${i}`}
+                        courseSlug={null}
+                        handleDelete={handleDelete}
+                        handleCheck={handleCheck}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : null
+            )}
+
+            {/* Completed Assignments */}
+            {Object.values(assignments)
+              .flat()
+              .filter((assignment) => assignment.is_done).length ? (
+              <div className="card mb-3">
                 <div className="card-header">
-                  <h5 className="mb-0">{assignments[0].course_name}</h5>
+                  <h5 className="mb-0">Completed Assignments</h5>
                 </div>
                 <div className="card-body">
-                <div className="accordion" id={`acc-${i}`}>
-                  <Accordion
-                    assignments={assignments}
-                    parentId={`acc-${i}`}
-                    courseSlug={null}
-                    handleDelete={handleDelete}
-                    handleCheck={handleCheck}
-                  />
-
+                  <div className="accordion" id="acc-all-completed">
+                    <Accordion
+                      assignments={Object.values(assignments)
+                        .flat()
+                        .filter((assignment) => assignment.is_done)}
+                      parentId="acc-all-completed"
+                      courseSlug={null}
+                      handleDelete={handleDelete}
+                      handleCheck={handleCheck}
+                    />
                   </div>
                 </div>
               </div>
-            ) : null
-          )
+            ) : null}
+          </>
         ) : (
           <p className="text-muted">No assignments available.</p>
         )
       ) : assignments.length ? (
-        <div className="accordion" id="assignmentsAccordion">
-          <Accordion
-            assignments={assignments}
-            parentId="assignmentsAccordion"
-            courseSlug={courseSlug}
-            handleDelete={handleDelete}
-            handleCheck={handleCheck}
-          />
-
-        </div>
+        <>
+          { assignments.filter((assignment) => !assignment.is_done).length ? (
+          <div className="accordion" id="assignmentsAccordion-pending">
+            <h3>Pending Assignments</h3>
+            <Accordion
+              assignments={assignments.filter((assignment) => !assignment.is_done)}
+              parentId="assignmentsAccordion-pending"
+              courseSlug={courseSlug}
+              handleDelete={handleDelete}
+              handleCheck={handleCheck}
+            />
+            <hr />
+          </div>
+          ) : null} 
+          { assignments.filter((assignment) => assignment.is_done).length ? (
+          <div className="accordion" id="assignmentsAccordion-completed">
+            <h3>Completed Assignments</h3>
+            <Accordion
+              assignments={assignments.filter((assignment) => assignment.is_done)}
+              parentId="assignmentsAccordion-completed"
+              courseSlug={courseSlug}
+              handleDelete={handleDelete}
+              handleCheck={handleCheck}
+            />
+          </div>) : null}
+        </>
       ) : (
         <p className="text-muted">No assignments available for this course.</p>
       )}
