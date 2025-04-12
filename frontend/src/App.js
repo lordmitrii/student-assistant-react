@@ -4,11 +4,10 @@ import Logout from "./components/Logout";
 import Home from "./components/Home";
 import Courses from "./components/Courses";
 import CoursesAdd from "./components/CoursesAdd";
-import CoursesEdit from "./components/CoursesEdit";
 import Grades from "./components/Grades";
 import GradesAdd from "./components/GradesAdd";
-import GradesEdit from "./components/GradesEdit";
 import Assignments from "./components/Assignments";
+import AssignmentsAdd from "./components/AssignmentsAdd";
 import Account from "./components/Account";
 import NotFound from "./components/NotFound";
 import PrivateRoute from "./components/PrivateRoute"; 
@@ -17,8 +16,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <Routes>
           <Route element={<Layout />}>
             {/* Not Found */}
@@ -35,22 +34,25 @@ function App() {
 
               <Route path="/courses" element={<Courses />} />
               <Route path="/courses/add" element={<CoursesAdd />} />
-              <Route path="/courses/:courseSlug/edit" element={<CoursesEdit />} />
+              <Route path="/courses/:courseSlug/edit" element={<CoursesAdd edit={true} />} />
 
               <Route path="/courses/grades" element={<Grades />} />
               <Route path="/courses/:courseSlug/grades" element={<Grades />} />
               <Route path="/courses/grades/add" element={<GradesAdd />} />
               <Route path="/courses/:courseSlug/grades/add" element={<GradesAdd />} />
-              <Route path="/courses/grades/:gradeId/edit" element={<GradesEdit />} />
+              <Route path="/courses/grades/:gradeId/edit" element={<GradesAdd edit={true} />} />
 
               <Route path="/courses/assignments" element={<Assignments />} />
               <Route path="/courses/:courseSlug/assignments" element={<Assignments />} />
+              <Route path="/courses/assignments/add" element={<AssignmentsAdd />} />
+              <Route path="/courses/:courseSlug/assignments/add" element={<AssignmentsAdd />} />
+              <Route path="/courses/assignments/:assignmentId/edit" element={<AssignmentsAdd edit={true} />} />
             </Route>
 
           </Route>
         </Routes>
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

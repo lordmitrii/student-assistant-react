@@ -37,7 +37,7 @@ const Assignments = () => {
     if (!window.confirm("Are you sure you want to delete this assignment?")) return;
   
     try {
-      await api.delete(`/courses/assignments/${assignmentId}/`);
+      await api.delete(`/courses/assignments/${assignmentId}/modify/`);
   
       if (courseSlug) {
         const res = await api.get(`/courses/${courseSlug}/assignments/`);
@@ -54,6 +54,27 @@ const Assignments = () => {
       alert("Something went wrong while deleting the assignment.");
     }
   };
+
+  const handleCheck = async (assignmentId) => {  
+    
+    try {
+      await api.patch(`/courses/assignments/${assignmentId}/complete/`);
+  
+      if (courseSlug) {
+        const res = await api.get(`/courses/${courseSlug}/assignments/`);
+        setAssignments(res.data.assignments || []);
+        setDueCount(res.data.dueCount || null);
+      } else {
+        const res = await api.get(`/courses/assignments/`);
+        setAssignments(res.data.assignments || {});
+        setDueCount(res.data.dueCount || null);
+      }
+  
+    } catch (err) {
+      console.error("Failed to mark assignment as done:", err);
+    }
+  };
+
   
   
 
@@ -87,11 +108,11 @@ const Assignments = () => {
       {/* Assignment display */}
       {allAssignmentsView ? (
         Object.keys(assignments).length ? (
-          Object.entries(assignments).map(([courseName, assignments], i) =>
+          Object.entries(assignments).map(([courseSlug, assignments], i) =>
             assignments.length ? (
               <div className="card mb-3" key={i}>
                 <div className="card-header">
-                  <h5 className="mb-0">{courseName}</h5>
+                  <h5 className="mb-0">{assignments[0].course_name}</h5>
                 </div>
                 <div className="card-body">
                 <div className="accordion" id={`acc-${i}`}>
@@ -100,6 +121,7 @@ const Assignments = () => {
                     parentId={`acc-${i}`}
                     courseSlug={null}
                     handleDelete={handleDelete}
+                    handleCheck={handleCheck}
                   />
 
                   </div>
@@ -117,6 +139,7 @@ const Assignments = () => {
             parentId="assignmentsAccordion"
             courseSlug={courseSlug}
             handleDelete={handleDelete}
+            handleCheck={handleCheck}
           />
 
         </div>
@@ -127,7 +150,7 @@ const Assignments = () => {
   );
 };
 
-const Accordion = ({ assignments, parentId, courseSlug, handleDelete }) => {
+const Accordion = ({ assignments, parentId, courseSlug, handleDelete, handleCheck }) => {
   return assignments.map((assignment, index) => {
     const collapseId = `${parentId}-collapse-${index}`;
     const headingId = `${parentId}-heading-${index}`;
@@ -154,9 +177,10 @@ const Accordion = ({ assignments, parentId, courseSlug, handleDelete }) => {
           data-bs-parent={`#${parentId}`}
         >
           <div className="accordion-body">
-            <p>Mark as Done:</p>
+            <p>Mark as Done: {" "}
+              <input type="checkbox" className="form-check-input" checked={assignment.is_done} onChange={() => handleCheck(assignment.id)}/>
+            </p>
             <p>
-            {console.log(assignment)}
               Grade:{" "}
               {assignment.grade_val? assignment.grade_val.toFixed(2) : <span className="text-muted">No grade available</span>}
             </p>

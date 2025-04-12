@@ -1,41 +1,71 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-const CoursesAdd = () => {
-  const [courseName, setCourseName] = useState("");
-  const [error, setError] = useState("");
+const CoursesAdd = ({ edit }) => {
+  const { courseSlug } = useParams();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const [courseName, setCourseName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!edit) {
+      setLoading(false);
+      return;
+    }
+    api.get(`/courses/${courseSlug}/modify`)
+      .then((res) => {
+        setCourseName(res.data.course_name);
+        setLoading(false);
+      })  
+      .catch((err) => {
+        console.error(err);
+        setError("Failed to load course.");
+        setLoading(false);
+      });
+  }, [courseSlug]);
+
+  const handleUpdate = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const response = await api.post("/courses/", {
-        course_name: courseName,
-      });
+      if (edit) {
+        const res = await api.patch(`/courses/${courseSlug}/modify`, {
+          course_name: courseName});
+        
+        if (res.status === 200 || res.status === 201) {
+          navigate("/courses");
+        }
+      } else {
+        const res = await api.post(`/courses/${courseSlug}/modify`, {
+          course_name: courseName});
 
-      if (response.status === 201 || response.status === 200) {
-        navigate("/courses");
+        if (res.status === 200 || res.status === 201) {
+          navigate("/courses");
+        }
       }
     } catch (err) {
-      console.error("Error creating course:", err);
-      setError("Failed to create course. Please try again.");
+      console.error(err);
+      setError("Error occured. Please try again.");
     }
   };
 
+  if (loading) return <p className="text-center mt-4">Loading...</p>;
+
   return (
     <div className="container mt-5" style={{ maxWidth: "600px" }}>
-      <h3 className="mb-4">Add Course</h3>
+      <h3 className="mb-4">
+        {edit ? "Edit" : "Add"} Course
+      </h3>
 
       {error && <div className="alert alert-danger">{error}</div>}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleUpdate}>
         <div className="mb-3">
-          <label htmlFor="courseName" className="form-label">
-            Course Name
-          </label>
+          <label htmlFor="courseName" className="form-label">Course Name</label>
           <input
             type="text"
             id="courseName"
@@ -46,9 +76,9 @@ const CoursesAdd = () => {
           />
         </div>
 
-        <button type="submit" className="btn btn-primary">
-          Save Course
-        </button>
+        <div className="d-flex justify-content-center">
+          <button type="submit" className="btn btn-primary">Save</button>
+        </div>
       </form>
     </div>
   );

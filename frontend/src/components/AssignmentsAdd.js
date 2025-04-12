@@ -3,31 +3,29 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import api from "../services/api";
 
-const GradesAdd = ({ edit }) => {
-  const { courseSlug, gradeId } = useParams(); 
+const AssignmentAdd = ({ edit }) => {
+  const { courseSlug, assignmentId } = useParams(); 
   const navigate = useNavigate();
 
-  const [grade, setGrade] = useState("");
+  const [assignmentName, setAssignmentName] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
-
   useEffect(() => {
     if (!edit) {
       setLoading(false);
       return;
     }
-    api.get(`/courses/grades/${gradeId}/modify`)
+    api.get(`/courses/assignments/${assignmentId}/modify`)
       .then((res) => {
-        setGrade(res.data.grade);
+        setAssignmentName(res.data.name);
         setLoading(false);
       })  
       .catch((err) => {
         console.error(err);
-        setError("Failed to load grade.");
+        setError("Failed to load assignment.");
         setLoading(false);
       });
-  }, [gradeId]);
+  }, [assignmentId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,8 +33,8 @@ const GradesAdd = ({ edit }) => {
 
     try {
       if (edit) {
-        const res = await api.patch(`/courses/grades/${gradeId}/modify/`, {
-          grade: grade,
+        const res = await api.patch(`/courses/assignments/${assignmentId}/modify/`, {
+          name: assignmentName,
         });
 
         if (res.status === 201 || res.status === 200) {
@@ -44,10 +42,10 @@ const GradesAdd = ({ edit }) => {
         }
       }
       else {
-        const res = await api.post(`/courses/grades/${gradeId}/modify/`, {
-          grade: grade,
+        const res = await api.post(`/courses/assignments/${assignmentId}/modify/`, {
+          name: assignmentName,
           course_slug: courseSlug, 
-          date: new Date().toISOString(),
+          deadline: new Date().toISOString(),
         });
 
         if (res.status === 201 || res.status === 200) {
@@ -64,22 +62,22 @@ const GradesAdd = ({ edit }) => {
   return (
     <div className="container mt-5" style={{ maxWidth: "600px" }}>
       <h3 className="mb-4">
-        {edit ? "Edit" : "Add"} Grade
+        {edit ? "Edit" : "Add"} Assignment
       </h3>
 
       {error && <div className="alert alert-danger">{error}</div>}
 
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label htmlFor="grade" className="form-label">
-            Grade
+          <label htmlFor="assignment" className="form-label">
+            Assignment
           </label>
           <input
             type="text"
-            id="grade"
+            id="assignment"
             className="form-control"
-            value={grade}
-            onChange={(e) => setGrade(e.target.value)}
+            value={assignmentName}
+            onChange={(e) => setAssignmentName(e.target.value)}
             required
           />
         </div>
@@ -92,4 +90,4 @@ const GradesAdd = ({ edit }) => {
   );
 };
 
-export default GradesAdd;
+export default AssignmentAdd;

@@ -20,7 +20,7 @@ class GradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grade
         fields = '__all__'
-        read_only_fields = ['assignment_name', 'course_name']
+        read_only_fields = ['assignment_name', 'course_name', 'course']
 
 
     def get_course_name(self, obj):
@@ -33,15 +33,18 @@ class GradeSerializer(serializers.ModelSerializer):
 
 class AssignmentSerializer(serializers.ModelSerializer):
     grade_val = serializers.SerializerMethodField(required=False)
+    course_name = serializers.SerializerMethodField(required=False)
+    
     class Meta:
         model = Assignment
         fields = '__all__'
-        read_only_fields = ['grade_val']
+        read_only_fields = ['grade_val', 'couse_name', 'course']
 
     def get_grade_val(self, obj):
-        if hasattr(obj, 'grade'):
-            return obj.grade.grade
-        return None
+        return obj.grade.grade if obj.grade else None
+    
+    def get_course_name(self, obj):
+        return obj.course.course_name if obj.course else None
 
 class NewsSerializer(serializers.ModelSerializer):
     class Meta:

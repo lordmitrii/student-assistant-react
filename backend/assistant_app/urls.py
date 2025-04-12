@@ -52,17 +52,18 @@ urlpatterns = [
 
     # API endpoints
     path('api/courses/', api.api_courses, name='api_courses'),
-    path('api/courses/<slug:course_slug>/modify', api.api_courses, name='api_courses_slug'),
+    path('api/courses/<course_slug>/modify', api.api_courses, name='api_courses_slug'),
 
 
     path('api/courses/grades/', api.api_grades, name='api_all_grades'),
-    path('api/courses/grades/modify/', api.api_grades_modify, name='api_grade'),
-    path('api/courses/<slug:course_slug>/grades/', api.api_grades, name='api_grades_for_course'),
+    path('api/courses/grades/<grade_id>/modify/', api.api_grades_modify, name='api_grade'),
+    path('api/courses/<course_slug>/grades/', api.api_grades, name='api_grades_for_course'),
     
     
     path('api/courses/assignments/', api.api_assignments, name='api_all_assignments'),
-    path('api/courses/assignments/modify/', api.api_assignments_modify, name='api_assignment'),
-    path('api/courses/<slug:course_slug>/assignments/', api.api_assignments, name='api_assignments_for_course'),
+    path('api/courses/assignments/<assignment_id>/modify/', api.api_assignments_modify, name='api_assignment'),
+    path('api/courses/<course_slug>/assignments/', api.api_assignments, name='api_assignments_for_course'),
+    path('api/courses/assignments/<assignment_id>/complete/', api.api_assignments_complete, name='api_assignment_complete'),
 
     # In case we view grades for a specific course
     # path('api/courses/<slug:course_slug>/grades/add/', api.api_add_grade, name='api_add_grade_for_course'),

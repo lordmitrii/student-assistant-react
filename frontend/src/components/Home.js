@@ -64,32 +64,35 @@ const Home = () => {
             <h5 className="mb-0">Recent Grades</h5>
           </div>
           <div className="card-body">
-            {grades.length ? (
-              <ul className="list-group">
-                {grades.map((g) => (
-                  <li
-                    key={g.id}
-                    className="list-group-item d-flex justify-content-between align-items-center"
-                  >
-                    <div>
-                      <strong>{g.course_name}</strong>
-                      <div className="text-muted">
-                        Assignment:{" "}
-                        {g.assignment_name || "No linked assignment"}
+            {user ? (
+              grades.length ? (
+                <ul className="list-group">
+                  {grades.map((g) => (
+                    <li
+                      key={g.id}
+                      className="list-group-item d-flex justify-content-between align-items-center"
+                    >
+                      <div>
+                        <strong>{g.course_name}</strong>
+                        <div className="text-muted">
+                          Assignment:{" "}
+                          {g.assignment_name || "No linked assignment"}
+                        </div>
+                        <div className="text-muted">
+                          Date: {new Date(g.date).toLocaleDateString()}
+                        </div>
                       </div>
-                      <div className="text-muted">
-                        Date: {new Date(g.date).toLocaleDateString()}
-                      </div>
-                    </div>
-                    <span className={`badge ${getGradeBadge(g.grade)}`}>
-                      {g.grade.toFixed(2)}%
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-muted">No recent grades.</p>
-            )}
+                      <span className={`badge ${getGradeBadge(g.grade)}`}>
+                        {g.grade.toFixed(2)}%
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted">No recent grades.</p>
+              )) : (
+                <p className="text-muted">Log in to see your recent grades.</p>
+              )}
           </div>
         </div>
       </div>

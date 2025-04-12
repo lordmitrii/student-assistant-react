@@ -8,7 +8,7 @@ const Grades = () => {
   const [allGradesView, setAllGradesView] = useState(true); 
   const { courseSlug } = useParams(); 
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     if (courseSlug) {
       setAllGradesView(false);
@@ -37,7 +37,7 @@ const Grades = () => {
     if (!window.confirm("Are you sure you want to delete this grade?")) return;
   
     try {
-      await api.delete(`/courses/grades/${gradeId}/`);
+      await api.delete(`/courses/grades/${gradeId}/modify/`);
   
       if (courseSlug) {
         const res = await api.get(`/courses/${courseSlug}/grades/`);
@@ -87,11 +87,11 @@ const Grades = () => {
       {/* Grade display */}
       {allGradesView ? (
         Object.keys(grades).length ? (
-          Object.entries(grades).map(([courseName, grades], i) =>
+          Object.entries(grades).map(([courseSlug, grades], i) =>
             grades.length ? (
               <div className="card mb-3" key={i}>
                 <div className="card-header">
-                  <h5 className="mb-0">{courseName}</h5>
+                  <h5 className="mb-0">{grades[0].course_name}</h5>
                 </div>
                 <div className="card-body">
                 <div className="accordion" id={`acc-${i}`}>

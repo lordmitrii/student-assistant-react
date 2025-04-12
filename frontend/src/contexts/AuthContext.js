@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { fetchUser, login as loginApi, logout as logoutApi } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUser()
@@ -20,9 +22,11 @@ export const AuthProvider = ({ children }) => {
     return res;
   };
 
-  const logout = async () => {
-    await logoutApi();
-    setUser(null);
+  const logout = () => {
+    logoutApi().then(() => {
+      setUser(null);
+      navigate("/login");
+    });
   };
 
   return (
