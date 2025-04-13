@@ -78,6 +78,8 @@ urlpatterns = [
     path('api/user/', api.get_user, name='get_user'),
     path('api/login/', api.api_login, name='api_login'),
     path('api/logout/', api.api_logout, name='api_logout'),
+    path('api/register/', api.api_register, name='api_register'),
+
     path('api/assignments/upcoming/', api.api_upcoming_deadlines, name='api_upcoming_deadlines'),
     path('api/grades/recent/', api.api_recent_grades, name='api_recent_grades'),
     path('api/news/latest/', api.api_latest_news, name='api_news_latest'),

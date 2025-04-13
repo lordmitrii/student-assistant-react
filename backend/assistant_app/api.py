@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.db.models import Sum, F, ExpressionWrapper, FloatField, Count, Q
+from django.contrib.auth.models import User
 
 @ensure_csrf_cookie
 def csrf_cookie(request):
@@ -40,6 +41,19 @@ def api_login(request):
     
     return Response({'status': 'error', 'message': 'Invalid credentials'}, status=401)      
 
+
+@api_view(['POST'])
+@permission_classes([])
+def api_register(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    if User.objects.filter(username=username).exists():
+        return Response({'status': 'error', 'message': 'Username already exists'}, status=400)
+    
+    user = User.objects.create_user(username=username, password=password)
+    user.save()
+    return Response({'status': 'ok', 'message': 'User created successfully'}, status=201)
 
 @api_view(['POST'])
 @permission_classes([])
