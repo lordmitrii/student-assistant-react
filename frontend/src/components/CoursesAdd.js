@@ -74,6 +74,7 @@ const CoursesAdd = ({ edit }) => {
             id="courseName"
             className="form-control"
             value={courseName}
+            placeholder="Enter course name"
             onChange={(e) => setCourseName(e.target.value)}
             required
           />

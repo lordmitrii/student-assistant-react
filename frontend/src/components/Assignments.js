@@ -129,12 +129,12 @@ const Assignments = () => {
             Add Assignment
           </button>
         </div>
-        <div className="col-md-2 text-center custom-outline mt-1 mb-1">
+        <div className="col-md-2 text-center mt-1 mb-1">
           {dueCount !== null && <>Due assignments: {dueCount}</>}
         </div>
         <div className="col-md-5 text-end">
           <button
-            className="btn btn-secondary custom-outline "
+            className="btn btn-secondary"
             onClick={() => navigate("/courses")}
           >
             Back to Courses

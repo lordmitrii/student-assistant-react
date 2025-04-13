@@ -60,7 +60,7 @@ const Grades = () => {
       <p>Credits: {grade.credits}</p>
       <p>
         Assignment:{" "}
-        {grade.assignment?.name || (
+        {grade.assignment_name || (
           <span className="text-muted">No assignment linked</span>
         )}
       </p>
@@ -100,12 +100,12 @@ const Grades = () => {
             Add Grade
           </button>
         </div>
-        <div className="col-md-2 text-center custom-outline mt-1 mb-1">
+        <div className="col-md-2 text-center mt-1 mb-1">
           {average !== null && <>Average grade: {average.toFixed(2)}</>}
         </div>
         <div className="col-md-5 text-end">
           <button
-            className="btn btn-secondary custom-outline"
+            className="btn btn-secondary"
             onClick={() => navigate("/courses")}
           >
             Back to Courses

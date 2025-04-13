@@ -35,5 +35,7 @@ export const fetchUser = () => api.get("user/");
 export const login = (username, password) =>
   api.post("login/", { username, password });
 export const logout = () => api.post("logout/");
+export const register = (username, password) =>
+  api.post("register/", {username, password});
 
 export default api;

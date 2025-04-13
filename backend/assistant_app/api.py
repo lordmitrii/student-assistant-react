@@ -222,6 +222,12 @@ def api_grades_modify(request, grade_id=None):
         grade = GradeSerializer(data=request.data)
         if grade.is_valid():
             grade.save(course=course)
+            assignment_id = request.data.get('assignment')
+            # linking the grade to an assignment if provided
+            if assignment_id:
+                assignment = get_object_or_404(Assignment, id=assignment_id, course=course)
+                assignment.grade = grade.instance
+                assignment.save()
             return Response(grade.data, status=201)
         return Response(grade.errors, status=400)
 
