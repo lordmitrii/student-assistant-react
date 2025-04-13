@@ -36,7 +36,7 @@ const Account = () => {
                 <div
                   className="rounded-circle bg-primary text-white d-inline-flex justify-content-center align-items-center profile-icon"
                   style={{ width: "80px", height: "80px", fontSize: "36px" }}
-                > 
+                >
                   {user.username.slice(0, 1).toUpperCase()}
                 </div>
               </div>

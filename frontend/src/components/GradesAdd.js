@@ -4,24 +4,24 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
 
 const GradesAdd = ({ edit }) => {
-  const { courseSlug, gradeId } = useParams(); 
+  const { courseSlug, gradeId } = useParams();
   const navigate = useNavigate();
 
   const [grade, setGrade] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
 
   useEffect(() => {
     if (!edit) {
       setLoading(false);
       return;
     }
-    api.get(`/courses/grades/${gradeId}/modify`)
+    api
+      .get(`/courses/grades/${gradeId}/modify`)
       .then((res) => {
         setGrade(res.data.grade);
         setLoading(false);
-      })  
+      })
       .catch((err) => {
         console.error(err);
         setError("Failed to load grade.");
@@ -42,18 +42,17 @@ const GradesAdd = ({ edit }) => {
         if (res.status === 201 || res.status === 200) {
           navigate("/courses");
         }
-      }
-      else {
+      } else {
         const res = await api.post(`/courses/grades/${gradeId}/modify/`, {
           grade: grade,
-          course_slug: courseSlug, 
+          course_slug: courseSlug,
           date: new Date().toISOString(),
         });
 
         if (res.status === 201 || res.status === 200) {
           navigate("/courses");
         }
-    }
+      }
     } catch (err) {
       console.error(err);
       setError("Error occurred. Please try again.");
@@ -63,9 +62,7 @@ const GradesAdd = ({ edit }) => {
   if (loading) return <p className="text-center mt-4">Loading...</p>;
   return (
     <div className="container mt-5" style={{ maxWidth: "600px" }}>
-      <h3 className="mb-4">
-        {edit ? "Edit" : "Add"} Grade
-      </h3>
+      <h3 className="mb-4">{edit ? "Edit" : "Add"} Grade</h3>
 
       {error && <div className="alert alert-danger">{error}</div>}
 
@@ -85,7 +82,7 @@ const GradesAdd = ({ edit }) => {
         </div>
 
         <button type="submit" className="btn btn-primary">
-          Save 
+          Save
         </button>
       </form>
     </div>

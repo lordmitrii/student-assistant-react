@@ -13,7 +13,8 @@ const Home = () => {
     if (user) {
       api.get("/assignments/upcoming/").then((res) => setDeadlines(res.data));
       api.get("/grades/recent/").then((res) => setGrades(res.data));
-    }}, [user]);
+    }
+  }, [user]);
 
   return (
     <div className="row">
@@ -35,7 +36,9 @@ const Home = () => {
                     >
                       <div>
                         <strong>{d.name}</strong>
-                        <div className="text-muted">Course: {d.course_name}</div>
+                        <div className="text-muted">
+                          Course: {d.course_name}
+                        </div>
                         <div className="text-muted">
                           Graded: {d.graded ? "✅ Yes" : "❌ No"}
                         </div>
@@ -50,9 +53,12 @@ const Home = () => {
                 </ul>
               ) : (
                 <p className="text-muted">No upcoming deadlines.</p>
-              )) : (
-              <p className="text-muted">Log in to see your upcoming deadlines.</p>
-              )}
+              )
+            ) : (
+              <p className="text-muted">
+                Log in to see your upcoming deadlines.
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -90,9 +96,10 @@ const Home = () => {
                 </ul>
               ) : (
                 <p className="text-muted">No recent grades.</p>
-              )) : (
-                <p className="text-muted">Log in to see your recent grades.</p>
-              )}
+              )
+            ) : (
+              <p className="text-muted">Log in to see your recent grades.</p>
+            )}
           </div>
         </div>
       </div>

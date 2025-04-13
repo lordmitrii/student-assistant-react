@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
 
 const AssignmentAdd = ({ edit }) => {
-  const { courseSlug, assignmentId } = useParams(); 
+  const { courseSlug, assignmentId } = useParams();
   const navigate = useNavigate();
 
   const [assignmentName, setAssignmentName] = useState("");
@@ -15,11 +15,12 @@ const AssignmentAdd = ({ edit }) => {
       setLoading(false);
       return;
     }
-    api.get(`/courses/assignments/${assignmentId}/modify`)
+    api
+      .get(`/courses/assignments/${assignmentId}/modify`)
       .then((res) => {
         setAssignmentName(res.data.name);
         setLoading(false);
-      })  
+      })
       .catch((err) => {
         console.error(err);
         setError("Failed to load assignment.");
@@ -33,25 +34,30 @@ const AssignmentAdd = ({ edit }) => {
 
     try {
       if (edit) {
-        const res = await api.patch(`/courses/assignments/${assignmentId}/modify/`, {
-          name: assignmentName,
-        });
+        const res = await api.patch(
+          `/courses/assignments/${assignmentId}/modify/`,
+          {
+            name: assignmentName,
+          },
+        );
+
+        if (res.status === 201 || res.status === 200) {
+          navigate("/courses");
+        }
+      } else {
+        const res = await api.post(
+          `/courses/assignments/${assignmentId}/modify/`,
+          {
+            name: assignmentName,
+            course_slug: courseSlug,
+            deadline: new Date().toISOString(),
+          },
+        );
 
         if (res.status === 201 || res.status === 200) {
           navigate("/courses");
         }
       }
-      else {
-        const res = await api.post(`/courses/assignments/${assignmentId}/modify/`, {
-          name: assignmentName,
-          course_slug: courseSlug, 
-          deadline: new Date().toISOString(),
-        });
-
-        if (res.status === 201 || res.status === 200) {
-          navigate("/courses");
-        }
-    }
     } catch (err) {
       console.error(err);
       setError("Error occurred. Please try again.");
@@ -61,9 +67,7 @@ const AssignmentAdd = ({ edit }) => {
   if (loading) return <p className="text-center mt-4">Loading...</p>;
   return (
     <div className="container mt-5" style={{ maxWidth: "600px" }}>
-      <h3 className="mb-4">
-        {edit ? "Edit" : "Add"} Assignment
-      </h3>
+      <h3 className="mb-4">{edit ? "Edit" : "Add"} Assignment</h3>
 
       {error && <div className="alert alert-danger">{error}</div>}
 
@@ -83,7 +87,7 @@ const AssignmentAdd = ({ edit }) => {
         </div>
 
         <button type="submit" className="btn btn-primary">
-          Save 
+          Save
         </button>
       </form>
     </div>

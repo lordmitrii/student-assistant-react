@@ -36,10 +36,16 @@ const Courses = () => {
           </Link>
         </div>
         <div className="col-md-4 text-center">
-          <Link to="/courses/grades" className="btn btn-light custom-outline me-4">
+          <Link
+            to="/courses/grades"
+            className="btn btn-light custom-outline me-4"
+          >
             View All Grades
           </Link>
-          <Link to="/courses/assignments" className="btn btn-light custom-outline">
+          <Link
+            to="/courses/assignments"
+            className="btn btn-light custom-outline"
+          >
             View All Assignments
           </Link>
         </div>
