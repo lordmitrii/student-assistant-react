@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import api from "../services/api";
@@ -8,7 +8,7 @@ const GradesAdd = ({ edit }) => {
   const navigate = useNavigate();
 
   const [assignment, setAssignment] = useState("");
-  const [credits, setCredits] = useState("");
+  const [credits, setCredits] = useState(10);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [note, setNote] = useState("");
   const [course, setCourse] = useState(courseSlug || "");
@@ -22,8 +22,6 @@ const GradesAdd = ({ edit }) => {
   useEffect(() => {
     if (!courseSlug) {
       api.get("/courses/").then((res) => setCourses(res.data));
-    } else {
-      api.get(`/courses/${courseSlug}/assignments/`).then((res) => setAssignments(res.data.assignments));
     }
 
     if (edit) {
@@ -32,11 +30,11 @@ const GradesAdd = ({ edit }) => {
         .then((res) => {
           const data = res.data;
           setGrade(data.grade);
-          setAssignment(data.assignment);
           setCredits(data.credits);
           setDate(data.date.slice(0, 10));
           setNote(data.note);
           setCourse(data.course_slug || courseSlug || "");
+          setAssignment(data.assignment);
           setLoading(false);
         })
         .catch((err) => {
@@ -47,12 +45,12 @@ const GradesAdd = ({ edit }) => {
     } else {
       setLoading(false);
     }
-  }, [gradeId]);
+  }, [gradeId, courseSlug, edit]);
 
   useEffect(() => {
     if (course) {
       api.get(`/courses/${course}/assignments/`).then((res) => {
-        setAssignments(res.data.assignments);
+        setAssignments(res.data.assignments.filter((a) => a.graded) || []);
       });
     } else {
       setAssignments([]);
@@ -73,6 +71,7 @@ const GradesAdd = ({ edit }) => {
     };
 
     try {
+      console.log(gradeId);
       const url = edit
         ? `/courses/grades/${gradeId}/modify/`
         : `/courses/grades/${gradeId}/modify/`;
@@ -186,7 +185,7 @@ const GradesAdd = ({ edit }) => {
           <button
             type="button"
             className="btn btn-secondary"
-            onClick={() => navigate(`/courses`)}
+            onClick={() => navigate(-1)}
           >
             Cancel
           </button>

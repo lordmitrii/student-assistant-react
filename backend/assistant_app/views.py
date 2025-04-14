@@ -1,141 +1,158 @@
-from django.shortcuts import get_object_or_404, render
-from django.db.models import Sum, F, ExpressionWrapper, FloatField, Count, Q
 from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect
-from .forms import RegistrationForm, CourseForm, GradeForm, AssignmentForm
-from django.contrib.auth.decorators import login_required
 from .models import Course, Grade, Assignment, News
+from .serializers import CourseSerializer, GradeSerializer, AssignmentSerializer, NewsSerializer
+from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.db.models import Sum, F, ExpressionWrapper, FloatField, Count, Q
+from django.contrib.auth.models import User
+
+@ensure_csrf_cookie
+def csrf_cookie(request):
+    return JsonResponse({"message": "CSRF cookie set"})
+
+@api_view(['POST'])
+@permission_classes([])
+def api_login(request):
+    # print(request.user.is_authenticated)
+    # if request.user.is_authenticated:
+    #     logout(request)
+    
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        return Response({
+                "status": 'ok',
+                "isAuthenticated": True,
+                "user": {
+                    "username": request.user.username,
+                    "email": request.user.email,
+                    "date_joined": request.user.date_joined,
+                    "last_login": request.user.last_login
+                }
+            })
+    
+    return Response({'status': 'error', 'message': 'Invalid credentials'}, status=401)      
 
 
+@api_view(['POST'])
+@permission_classes([])
+def api_register(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
 
-# Home view for the application
-def home(request):
-    context_dict = {
-        "title": "Welcome to the Student Assistant App",
-        "message": "Hello, world!",
-    }
+    if User.objects.filter(username=username).exists():
+        return Response({'status': 'error', 'message': 'Username already exists'}, status=400)
+    
+    user = User.objects.create_user(username=username, password=password)
+    user.save()
+    return Response({'status': 'ok', 'message': 'User created successfully'}, status=201)
 
+@api_view(['POST'])
+@permission_classes([])
+def api_logout(request):
     if request.user.is_authenticated:
-        upcoming_deadlines = Assignment.objects.filter(course__user=request.user, is_done=False).order_by('deadline')[:5]
-        recent_grades = Grade.objects.filter(course__user=request.user).order_by('-date')[:5]
-        latest_news = News.objects.filter(is_published=True).order_by('-date_posted')[:3]  # Fetch latest 3 news items
+        logout(request)
+        return Response({'status': 'ok', 'message': 'Logged out successfully'})
+    return Response({'status': 'error', 'message': 'User not logged in'}, status=401)
 
-        # Remaining days for deadlines
-        for deadline in upcoming_deadlines:
-            deadline.remaining_days = (deadline.deadline - now()).days 
 
-        context_dict.update({
-            "upcoming_deadlines": upcoming_deadlines,
-            "recent_grades": recent_grades,
-            "latest_news": latest_news
+@api_view(['GET'])
+@permission_classes([])
+def get_user(request):
+    if request.user.is_authenticated:
+        return Response({
+            "isAuthenticated": True,
+            "user": {
+                "username": request.user.username,
+                "email": request.user.email,
+                "date_joined": request.user.date_joined,
+                "last_login": request.user.last_login
+            }
         })
-
-    return render(request, "assistant_app/home.html", context_dict)
-
-
-# About view for the application
-def about(request):
-    return render(request, "assistant_app/about.html")
+    return Response({"isAuthenticated": False})
 
 
-# Login and registration views
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('assistant_app:home')
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_upcoming_deadlines(request):
+    assignments = Assignment.objects.filter(course__user=request.user, is_done=False).order_by('deadline')[:5]
+    for a in assignments:
+        a.remaining_days = (a.deadline - now()).days  # Add this manually to serializer if needed
+    data = AssignmentSerializer(assignments, many=True).data
+    for i, d in enumerate(assignments):
+        data[i]['course_name'] = d.course.course_name
+        data[i]['remaining_days'] = (d.deadline - now()).days
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_recent_grades(request):
+    grades = Grade.objects.filter(course__user=request.user).order_by('-date')[:5]
+    data = GradeSerializer(grades, many=True).data
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([])
+def api_latest_news(request):
+    news = News.objects.filter(is_published=True).order_by('-date_posted')[:3]
+    return Response(NewsSerializer(news, many=True).data)
+
+######################################### Courses endpoints #########################################
+
+
+@api_view(['GET', 'POST', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def api_courses(request, course_slug=None):
+    if request.method == 'GET':
+        if course_slug:
+            course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
+            data = CourseSerializer(course).data
+            return Response(data)
         else:
-            return render(request, 'assistant_app/login.html', {'error': 'Invalid credentials'})
+            courses = Course.objects.filter(user=request.user).annotate(
+                total_weighted_grades=Sum(F('grades__grade') * F('grades__credits'), output_field=FloatField()),
+                total_credits=Sum('grades__credits', output_field=FloatField()),
+                due_assignments=Count('assignments', filter=Q(assignments__is_done=False), distinct=True)
+            ).annotate(
+                average_grade=ExpressionWrapper((F('total_weighted_grades') / F('total_credits')), output_field=FloatField())
+            )
+            data = CourseSerializer(courses, many=True).data
+            return Response(data)
 
-    return render(request, 'assistant_app/login.html')
+    elif request.method == 'POST':
+        course = CourseSerializer(data=request.data)
+        if course.is_valid():
+            course.save(user=request.user)
+            return Response(course.data, status=201)
+        return Response(course.errors, status=400)
 
-def register_view(request):
-    if request.method == 'POST':
-        form = RegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            user.backend = 'django.contrib.auth.backends.ModelBackend'
-            login(request, user)
-            return redirect('assistant_app:home')
-    else:
-        form = RegistrationForm()
-    return render(request, 'assistant_app/register.html', {'form': form})
+    elif request.method == 'PATCH':
+        course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
+        serializer = CourseSerializer(course, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
 
-def logout_view(request):
-    logout(request)
-    return redirect('assistant_app:login')
-
-# Account view for the application
-@login_required
-def account_view(request):
-    return render(request, 'assistant_app/account.html')
-
-# Calculator view for the application
-def calculator(request):
-    return render(request, 'assistant_app/calculator.html')
-
-# Course management views
-@login_required
-def courses(request):
-    # Query to get all courses for the user and calculate the average grade using weights
-    courses = Course.objects.filter(user=request.user).annotate(
-        total_weighted_grades=Sum(F('grades__grade') * F('grades__credits'), output_field=FloatField()),
-        total_credits=Sum('grades__credits', output_field=FloatField()),
-        due_assignments=Count('assignments', filter=Q(assignments__is_done=False), distinct=True)
-    ).annotate(
-        average_grade=ExpressionWrapper((F('total_weighted_grades') / F('total_credits')), output_field=FloatField())
-    )
-
-    return render(request, 'assistant_app/courses.html', {'courses': courses})
-
-# Add and edit course views
-@login_required
-def add_course(request):
-    if request.method == 'POST':
-        form = CourseForm(request.POST)
-        if form.is_valid():
-            new_course = form.save(commit=False)
-            new_course.user = request.user
-            new_course.save()
-            return redirect('assistant_app:courses')
-    else:
-        form = CourseForm()
-    return render(request, 'assistant_app/add_course.html', {'form': form})
-
-@login_required
-def edit_course(request, course_slug):
-    course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
-    original_name = course.course_name
-    if request.method == 'POST':
-        form = CourseForm(request.POST, instance=course)
-        if form.is_valid():
-            updated_course = form.save(commit=False)
-            # If the course name has changed, reset the slug
-            if original_name.lower() != updated_course.course_name.lower():
-                updated_course.course_slug = None
-            updated_course.save()
-            return redirect('assistant_app:courses')
-    else:
-        form = CourseForm(instance=course)
-    return render(request, 'assistant_app/edit_course.html', {'form': form, 'course': course})
+    elif request.method == 'DELETE':
+        course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
+        course.delete()
+        return Response(status=204)
 
 
-@login_required
-def delete_course(request, course_slug):
-    course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
-    course.delete()
-    return redirect('assistant_app:courses')
-
-
-# Grade management views
-@login_required
-def grades(request, course_slug=None):
-    # If a course slug is provided, filter grades for that specific course
+######################################## Grades endpoints #########################################
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_grades(request, course_slug=None):
     if course_slug:
         course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
         course_grades = Grade.objects.filter(course=course)
@@ -148,13 +165,11 @@ def grades(request, course_slug=None):
         else:
             course_average = None
 
-        # Render the template with course-specific grades
-        return render(request, 'assistant_app/grades.html', {
-            'course_slug': course_slug,
-            'course': course,
-            'course_grades': course_grades,
-            'course_average_grade': course_average,
-            'all_grades_view': False
+
+        data = GradeSerializer(course_grades, many=True).data
+        return Response({
+            'grades': data,
+            'average': course_average
         })
     
     # If no course slug is provided, show all grades for the user
@@ -179,187 +194,137 @@ def grades(request, course_slug=None):
 
         if grades_exist:
             for course in courses:
-                grades_by_course[course] = Grade.objects.filter(course=course)
+                course_grades = Grade.objects.filter(course=course)
+                grades_by_course[course.course_slug] = GradeSerializer(course_grades, many=True).data
 
-        return render(request, 'assistant_app/grades.html', {
-            'grades_by_course': grades_by_course,
-            'overall_average_grade': overall_average,
-            'all_grades_view': True
+        
+
+        return Response({
+            'grades': grades_by_course,
+            'average': overall_average,
         })
-
-
-@login_required
-def add_grade(request, course_slug=None):
-    course = None
-    if course_slug:
+    
+@api_view(['GET', 'POST', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def api_grades_modify(request, grade_id=None):
+    if request.method == 'GET':
+        if grade_id:
+            grade = get_object_or_404(Grade, id=grade_id, course__user=request.user)
+            data = GradeSerializer(grade).data
+            return Response(data)
+        else:
+            grades = Grade.objects.filter(course__user=request.user)
+            data = GradeSerializer(grades, many=True).data
+            return Response(data)
+    elif request.method == 'POST':
+        course_slug = request.data.get('course_slug')
         course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
-
-    if request.method == "POST":
-        form = GradeForm(request.POST, user=request.user, course_slug=course_slug)
-        if form.is_valid():
-            grade = form.save(commit=False)
-            if course:
-                grade.course = course
-            grade.save()
-            assignment = form.cleaned_data.get('assignment')
-            if assignment:
-                assignment.grade = grade
+        grade = GradeSerializer(data=request.data)
+        if grade.is_valid():
+            grade.save(course=course)
+            assignment_id = request.data.get('assignment')
+            # linking the grade to an assignment if provided
+            if assignment_id:
+                assignment = get_object_or_404(Assignment, id=assignment_id, course=course)
+                assignment.grade = grade.instance
                 assignment.save()
+            return Response(grade.data, status=201)
+        return Response(grade.errors, status=400)
 
-            if not course_slug:
-                return redirect('assistant_app:all_grades')
-            
-            return redirect('assistant_app:grades_for_course', course_slug=course.course_slug if course else form.cleaned_data['course'].course_slug)
-    else:
-        form = GradeForm(user=request.user, course_slug=course_slug)
+    elif request.method == 'PATCH':
+        grade = get_object_or_404(Grade, id=grade_id)
+        serializer = GradeSerializer(grade, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
 
-    return render(request, "assistant_app/add_grade.html", {"form": form, "course": course})
+    elif request.method == 'DELETE':
+        grade = get_object_or_404(Grade, id=grade_id)
+        grade.delete()
+        return Response(status=204)
+    
 
-@login_required
-def edit_grade(request, grade_id, course_slug=None):
-    grade = get_object_or_404(Grade, id=grade_id)
+######################################### Assignments endpoints #########################################
 
-    if request.method == "POST":
-        form = GradeForm(request.POST, instance=grade, user=request.user, course_slug=course_slug)
-        if form.is_valid():
-            new_grade = form.save(commit=False)
-            new_grade.course = grade.course
-            new_grade.save()
-        if not course_slug:
-            return redirect('assistant_app:all_grades')
-        return redirect('assistant_app:grades_for_course', course_slug=grade.course.course_slug)
-    else:
-        form = GradeForm(instance=grade, user=request.user, course_slug=course_slug)
-
-    return render(request, 'assistant_app/edit_grade.html', {"form": form, "grade": grade, "course_slug": course_slug})
-
-
-@login_required
-def delete_grade(request, grade_id, course_slug=None):
-    grade = get_object_or_404(Grade, id=grade_id)
-    grade.delete()
-
-    if course_slug:
-        return redirect('assistant_app:grades_for_course', course_slug=course_slug)
-    else:
-        return redirect('assistant_app:all_grades')
-
-
-# Assignment management views
-@login_required
-def assignments(request, course_slug=None):
-    ## Get the sorting order from the request, default to ascending order
-    order = request.GET.get('order', 'asc')
-    sorting_order = 'deadline' if order == 'asc' else '-deadline'
-
-    ## If a course slug is provided, filter assignments for that specific course
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_assignments(request, course_slug=None):
     if course_slug:
         course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
-        course_assignments_pending = Assignment.objects.filter(course=course, is_done=False).order_by(sorting_order)
-        course_assignments_completed = Assignment.objects.filter(course=course, is_done=True).order_by(sorting_order)
-        due_assignments = course_assignments_pending.count()
+        course_assignments = Assignment.objects.filter(course=course)
+        due_assignments_count = Assignment.objects.filter(course=course, is_done=False).count()
+        
 
-        # Render the template with course-specific assignments
-        return render(request, 'assistant_app/assignments.html', {
-            'course_slug': course_slug,
-            'course': course,
-            'course_assignments_pending': course_assignments_pending,
-            'course_assignments_completed': course_assignments_completed,
-            'course_due_assignments': due_assignments,
-            'all_assignments_view': False,
-            'order': order
+        data = AssignmentSerializer(course_assignments, many=True).data
+        return Response({
+            'assignments': data,
+            'due_count': due_assignments_count
         })
     
     # If no course slug is provided, show all assignments for the user
     else:
-        assignments_exists = False
+        assignments_exist = False
         assignments_by_course = {}
-        completed_assignments = []
         courses = Course.objects.filter(user=request.user)
-        completed_assignments = Assignment.objects.filter(course__user=request.user, is_done=True).order_by(sorting_order)
         due_assignments_count = Assignment.objects.filter(course__user=request.user, is_done=False).count()
 
         # Check if any course has assignments and prepare the data for rendering
         for course in courses:
             if course.assignments.exists():
-                assignments_exists = True
+                assignments_exist = True
                 break
-        
-        if assignments_exists:
+
+        if assignments_exist:
             for course in courses:
-                assignments_by_course[course] = Assignment.objects.filter(course=course, is_done=False).order_by(sorting_order)
+                course_assignments = Assignment.objects.filter(course=course)
+                assignments_by_course[course.course_slug] = AssignmentSerializer(course_assignments, many=True).data
 
-        return render(request, 'assistant_app/assignments.html', {
-            'assignments_by_course': assignments_by_course,
-            'completed_assignments' : completed_assignments,
-            'overall_due_assignments': due_assignments_count,
-            'all_assignments_view': True,
-            'order': order
+
+        return Response({
+            'assignments': assignments_by_course,
+            'due_count': due_assignments_count,
         })
-
-@login_required
-def add_assignment(request, course_slug=None):
-    course = None
-    if course_slug:
+    
+@api_view(['GET', 'POST', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def api_assignments_modify(request, assignment_id=None):
+    if request.method == 'GET':
+        if assignment_id:
+            assignment = get_object_or_404(Assignment, id=assignment_id, course__user=request.user)
+            data = AssignmentSerializer(assignment).data
+            return Response(data)
+        else:
+            assignments = Assignment.objects.filter(course__user=request.user)
+            data = AssignmentSerializer(assignments, many=True).data
+            return Response(data)
+    elif request.method == 'POST':
+        course_slug = request.data.get('course_slug')
         course = get_object_or_404(Course, course_slug=course_slug, user=request.user)
+        assignment = AssignmentSerializer(data=request.data)
+        if assignment.is_valid():
+            assignment.save(course=course)
+            return Response(assignment.data, status=201)
+        print(assignment.errors)
+        return Response(assignment.errors, status=400)
 
-    if request.method == "POST":
-        form = AssignmentForm(request.POST, user=request.user, course_slug=course_slug)
-        if form.is_valid():
-            assignment = form.save(commit=False)
-            if course:
-                assignment.course = course
-            assignment.save()
+    elif request.method == 'PATCH':
+        assignment = get_object_or_404(Assignment, id=assignment_id)
+        serializer = AssignmentSerializer(assignment, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
 
-            if not course_slug:
-                return redirect('assistant_app:all_assignments')
-            
-            return redirect('assistant_app:assignments_for_course', course_slug=course.course_slug if course else form.cleaned_data['course'].course_slug)
-    else:
-        form = AssignmentForm(user=request.user, course_slug=course_slug)
-
-    return render(request, "assistant_app/add_assignment.html", {"form": form, "course": course})
-
-@login_required
-def edit_assignment(request, assignment_id, course_slug=None):
-    assignment = get_object_or_404(Assignment, id=assignment_id)
-
-    if request.method == "POST":
-        form = AssignmentForm(request.POST, instance=assignment, user=request.user, course_slug=course_slug)
-        if form.is_valid():
-            new_assignment = form.save(commit=False)
-            new_assignment.course = assignment.course
-            if new_assignment.graded == False:
-                new_assignment.grade = None
-            new_assignment.save()
-        if not course_slug:
-            return redirect('assistant_app:all_assignments')
-        return redirect('assistant_app:assignments_for_course', course_slug=assignment.course.course_slug)
-    else:
-        form = AssignmentForm(instance=assignment, user=request.user, course_slug=course_slug)
-
-    return render(request, 'assistant_app/edit_assignment.html', {"form": form, "assignment": assignment, "course_slug": course_slug})
-
-@login_required
-def delete_assignment(request, assignment_id, course_slug=None):
-    assignment = get_object_or_404(Assignment, id=assignment_id)
-    assignment.delete()
-
-    if course_slug:
-        return redirect('assistant_app:assignments_for_course', course_slug=course_slug)
-    else:
-        return redirect('assistant_app:all_assignments')
-
-# AJAX helpers for assignments
-@login_required
-def get_assignments(request):
-    course_id = request.GET.get('course_id')
-    assignments = Assignment.objects.filter(course_id=course_id, graded=True, grade=None).values('id', 'name')
-    return JsonResponse({'assignments': list(assignments)})
-
-@login_required
-def mark_assignment_complete(request, assignment_id):
+    elif request.method == 'DELETE':
+        assignment = get_object_or_404(Assignment, id=assignment_id)
+        assignment.delete()
+        return Response(status=204)
+    
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def api_assignments_complete(request, assignment_id):
     assignment = get_object_or_404(Assignment, id=assignment_id, course__user=request.user)
-    assignment.is_done = not assignment.is_done  # Toggle the status
+    assignment.is_done = not assignment.is_done
     assignment.save()
-    return JsonResponse({'status': 'success', 'is_done': assignment.is_done})
+    return Response({'status': 'ok', 'is_done': assignment.is_done})

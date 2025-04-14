@@ -26,7 +26,7 @@ const CoursesAdd = ({ edit }) => {
         setError("Failed to load course.");
         setLoading(false);
       });
-  }, [courseSlug]);
+  }, [courseSlug, edit]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -81,8 +81,15 @@ const CoursesAdd = ({ edit }) => {
         </div>
 
         <div className="d-flex justify-content-center">
-          <button type="submit" className="btn btn-primary">
+          <button type="submit" className="btn btn-primary me-2">
             Save
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => navigate(-1)}
+          >
+            Cancel
           </button>
         </div>
       </form>

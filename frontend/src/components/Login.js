@@ -17,8 +17,17 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    await login(username, password);
-    navigate("/");
+    try {
+      await login(username, password);
+      navigate("/");
+    } catch (err) {
+      console.error("Login error:", err);
+      if (err.response && err.response.status === 401) {
+        setError("Invalid username or password.");
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    }
   };
 
   return (

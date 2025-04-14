@@ -11,3 +11,15 @@
     border: 1px solid #000000;
     border-radius: 4px;
 }
+
+
+.card, .accordion-item {
+    transition: 0.3s;
+    border-width: 0.125rem;
+}
+
+
+.card:hover {
+
+    transform: translateY(-5px);
+}

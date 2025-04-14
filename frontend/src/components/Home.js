@@ -105,7 +105,7 @@ const Home = () => {
       </div>
 
       {/* News */}
-      <div className="col-12 mt-3">
+      <div className="col-12 mt-3 mb-3">
         <div className="card shadow-lg">
           <div className="card-header bg-dark text-white">
             <h5 className="mb-0">Latest News</h5>

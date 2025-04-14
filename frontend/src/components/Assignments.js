@@ -96,7 +96,8 @@ const Assignments = () => {
       </p>
       <p>
         Grade:{" "}
-        {assignment.grade_val ? (
+        {console.log(assignment.grade_val)}
+        {assignment.grade_val || assignment.grade_val===0 ? (
           assignment.grade_val.toFixed(2)
         ) : (
           <span className="text-muted">No grade available</span>
@@ -197,7 +198,7 @@ const Assignments = () => {
       ) : assignments.length ? (
         <>
           {!!assignments.filter((assignment) => !assignment.is_done).length && (
-            <div className="accordion" id="assignmentsAccordion-pending">
+            <div className="accordion mb-3" id="assignmentsAccordion-pending">
               <h3>Pending Assignments</h3>
               <Accordion
                 items={assignments.filter((assignment) => !assignment.is_done)}
@@ -205,7 +206,6 @@ const Assignments = () => {
                 renderHeader={renderHeader}
                 renderBody={renderBody}
               />
-              <hr />
             </div>
           )}
           {!!assignments.filter((assignment) => assignment.is_done).length && (
