@@ -58,7 +58,6 @@ const AssignmentsAdd = ({ edit }) => {
     };
 
     try {
-      console.log(assignmentId)
       const url = edit
         ? `/courses/assignments/${assignmentId}/modify/`
         : `/courses/assignments/${assignmentId}/modify/`;

@@ -34,7 +34,7 @@ const GradesAdd = ({ edit }) => {
           setDate(data.date.slice(0, 10));
           setNote(data.note);
           setCourse(data.course_slug || courseSlug || "");
-          setAssignment(data.assignment);
+          setAssignment(data.assignment_id || "");
           setLoading(false);
         })
         .catch((err) => {
@@ -71,7 +71,6 @@ const GradesAdd = ({ edit }) => {
     };
 
     try {
-      console.log(gradeId);
       const url = edit
         ? `/courses/grades/${gradeId}/modify/`
         : `/courses/grades/${gradeId}/modify/`;
@@ -92,7 +91,6 @@ const GradesAdd = ({ edit }) => {
       <h3 className="mb-4">{edit ? "Edit" : "Add"} Grade</h3>
 
       {error && <div className="alert alert-danger">{error}</div>}
-
       <form onSubmit={handleSubmit}>
         {!courseSlug && (
           <div className="mb-3">
@@ -112,7 +110,6 @@ const GradesAdd = ({ edit }) => {
             </select>
           </div>
         )}
-
         <div className="mb-3">
           <label className="form-label">Assignment</label>
           <select
@@ -137,6 +134,7 @@ const GradesAdd = ({ edit }) => {
               className="form-control"
               min={0}
               max={100}
+              step={0.01}
               value={grade}
               placeholder="Enter grade in percentage"
               onChange={(e) => setGrade(e.target.value)}

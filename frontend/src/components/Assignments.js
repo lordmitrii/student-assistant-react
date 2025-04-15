@@ -96,7 +96,6 @@ const Assignments = () => {
       </p>
       <p>
         Grade:{" "}
-        {console.log(assignment.grade_val)}
         {assignment.grade_val || assignment.grade_val===0 ? (
           assignment.grade_val.toFixed(2)
         ) : (

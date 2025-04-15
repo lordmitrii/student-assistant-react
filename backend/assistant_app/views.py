@@ -305,7 +305,6 @@ def api_assignments_modify(request, assignment_id=None):
         if assignment.is_valid():
             assignment.save(course=course)
             return Response(assignment.data, status=201)
-        print(assignment.errors)
         return Response(assignment.errors, status=400)
 
     elif request.method == 'PATCH':
