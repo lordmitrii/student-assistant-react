@@ -1,6 +1,6 @@
 # Student Assistant
 
-## 📚 Project Description
+## Project Description
 
 **Student Assistant** is a web application designed to help students track academic deadlines and manage their grades.
 
