@@ -1,7 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 from assistant_app.models import Course, Grade, Assignment
-from django.utils.text import slugify
 from django.utils.timezone import now
 
 class CourseModelTest(TestCase):

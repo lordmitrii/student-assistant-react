@@ -7,6 +7,7 @@ const Assignments = () => {
   const [assignments, setAssignments] = useState({});
   const [dueCount, setDueCount] = useState(null);
   const [allAssignmentsView, setAllAssignmentsView] = useState(true);
+  const [order, setOrder] = useState("asc");
   const { courseSlug } = useParams();
   const navigate = useNavigate();
 
@@ -74,6 +75,32 @@ const Assignments = () => {
     }
   };
 
+  const toggleOrder = () => {
+    setOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
+    if (allAssignmentsView) {
+    const sortedAssignments = Object.entries(assignments).reduce(
+      (acc, [courseSlug, assignments]) => {
+        const sortedAssignments = assignments.sort((a, b) =>
+          order === "asc"
+            ? new Date(a.deadline) - new Date(b.deadline)
+            : new Date(b.deadline) - new Date(a.deadline)
+        );
+        acc[courseSlug] = sortedAssignments;
+        return acc;
+      },
+      {}
+    ) 
+    setAssignments(sortedAssignments)} 
+    else {
+      const sortedAssignments = assignments.sort((a, b) =>
+        order === "asc"
+          ? new Date(a.deadline) - new Date(b.deadline)
+          : new Date(b.deadline) - new Date(a.deadline)
+      );
+      setAssignments(sortedAssignments);
+    };
+  };
+
   const renderHeader = (assignment) => (
     <>
       <div className="col-md-6">Assignment: {assignment.name}</div>
@@ -96,7 +123,7 @@ const Assignments = () => {
       </p>
       <p>
         Grade:{" "}
-        {assignment.grade_val || assignment.grade_val===0 ? (
+        {assignment.grade_val || assignment.grade_val === 0 ? (
           assignment.grade_val.toFixed(2)
         ) : (
           <span className="text-muted">No grade available</span>
@@ -132,7 +159,10 @@ const Assignments = () => {
         <div className="col-md-2 text-center mt-1 mb-1">
           {dueCount !== null && <>Due assignments: {dueCount}</>}
         </div>
-        <div className="col-md-5 text-end">
+        <div className="col-md-5 justify-content-end d-flex gap-2">
+          <button className="btn btn-primary" onClick={() => toggleOrder()}>
+            Sort by Deadline {order==="asc" ? "↑" : "↓"}
+          </button>
           <button
             className="btn btn-secondary"
             onClick={() => navigate("/courses")}
@@ -146,26 +176,28 @@ const Assignments = () => {
         Object.keys(assignments).length ? (
           <>
             {/* Pending Assignments */}
-            {Object.entries(assignments).map(([courseSlug, assignments], i) =>
-              !!assignments.filter((assignment) => !assignment.is_done).length && (
-                <div className="card mb-3" key={`pending-${i}`}>
-                  <div className="card-header">
-                    <h5 className="mb-0">{assignments[0].course_name}</h5>
-                  </div>
-                  <div className="card-body">
-                    <div className="accordion" id={`acc-pending-${i}`}>
-                      <Accordion
-                        items={assignments.filter(
-                          (assignment) => !assignment.is_done,
-                        )}
-                        parentId={`acc-pending-${i}`}
-                        renderHeader={renderHeader}
-                        renderBody={renderBody}
-                      />
+            {Object.entries(assignments).map(
+              ([courseSlug, assignments], i) =>
+                !!assignments.filter((assignment) => !assignment.is_done)
+                  .length && (
+                  <div className="card mb-3" key={`pending-${i}`}>
+                    <div className="card-header">
+                      <h5 className="mb-0">{assignments[0].course_name}</h5>
+                    </div>
+                    <div className="card-body">
+                      <div className="accordion" id={`acc-pending-${i}`}>
+                        <Accordion
+                          items={assignments.filter(
+                            (assignment) => !assignment.is_done
+                          )}
+                          parentId={`acc-pending-${i}`}
+                          renderHeader={renderHeader}
+                          renderBody={renderBody}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ),
+                )
             )}
 
             {/* Completed Assignments */}
