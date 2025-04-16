@@ -30,7 +30,7 @@ const Register = () => {
   };
 
   const BACKEND_BASE_URL =
-    process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+    import.meta.env.VITE_API_BASE || "http://localhost:8000";
   const GOOGLE_LOGIN_URL = `${BACKEND_BASE_URL}/google/login/`;
 
   const handleSubmit = async (e) => {

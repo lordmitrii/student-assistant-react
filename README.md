@@ -76,8 +76,26 @@ Users can:
 3. Start the frontend development server:
 
     ```bash
-    npm start
+    npm run dev
     ```
+
+## Docker
+
+This project is fully containerized for rapid deployment. All you have to do:
+
+1. Install docker, docker-compose and make sure it is running.
+
+2. Build the images:
+
+```bash
+docker-compose build
+```
+
+3. Run the containers
+
+```bash
+docker-compose up
+```
 
 
 ## Sources Used

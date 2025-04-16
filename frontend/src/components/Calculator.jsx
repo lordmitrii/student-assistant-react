@@ -55,11 +55,11 @@ const Calculator = () => {
 
   return (
     <div className="container mt-5">
-      <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-          <h2 class="mb-0">Grade Calculator</h2>
+      <div className="card shadow">
+        <div className="card-header bg-primary text-white">
+          <h2 className="mb-0">Grade Calculator</h2>
         </div>
-        <div class="card-body">
+        <div className="card-body">
           <table className="table table-hover">
             <thead>
               <tr>
