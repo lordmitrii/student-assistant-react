@@ -12,12 +12,13 @@ function getCSRFToken() {
 }
 
 const api = axios.create({
-  baseURL: "http://localhost:8000/api/",
+  baseURL: process.env.REACT_APP_BACKEND_URL + "/api/" || "http://localhost:8000/api/",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
+
 
 api.interceptors.request.use((config) => {
   const csrfToken = getCSRFToken();

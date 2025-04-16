@@ -71,7 +71,8 @@ MIDDLEWARE = [
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000"
+    "http://localhost",
+    "http://127.0.0.1"
 ] + FRONTEND_URL.split(',')
 
 
@@ -195,10 +196,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+
+STATIC_URL = "/django-static/"
 STATICFILES_DIRS = [STATIC_DIR, ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 MEDIA_ROOT = MEDIA_DIR
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 
 LOGIN_URL = 'assistant_app:login'
 
