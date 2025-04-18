@@ -25,6 +25,6 @@ from django.shortcuts import redirect
 urlpatterns = [
     path("", include("assistant_app.urls")),
     path("admin/", admin.site.urls),
-    path("accounts/", include("allauth.urls")),
-    path('google/login/', lambda request: redirect('/accounts/google/login/'), name='google_login'),
+    path("api/accounts/", include("allauth.urls")),
+    path('api/google/login/', lambda request: redirect('/api/accounts/google/login/'), name='google_login'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

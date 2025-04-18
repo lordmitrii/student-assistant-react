@@ -32,6 +32,6 @@ urlpatterns = [
     path('api/grades/recent/', views.api_recent_grades, name='api_recent_grades'),
     path('api/news/latest/', views.api_latest_news, name='api_news_latest'),
 
-    path('redirect-to-home/', lambda request: redirect(settings.FRONTEND_URL), name='redirect_to_home'),
+    path('api/redirect-to-home/', lambda request: redirect(settings.FRONTEND_URL), name='redirect_to_home'),
 
 ]

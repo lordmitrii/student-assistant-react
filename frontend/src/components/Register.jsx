@@ -29,9 +29,7 @@ const Register = () => {
     }
   };
 
-  const BACKEND_BASE_URL =
-    import.meta.env.VITE_API_BASE || "http://localhost:8000";
-  const GOOGLE_LOGIN_URL = `${BACKEND_BASE_URL}/google/login/`;
+  const GOOGLE_LOGIN_URL = `/api/google/login/`;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

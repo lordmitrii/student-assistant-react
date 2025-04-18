@@ -17,8 +17,6 @@ services:
   frontend:
     build:
       context: ./frontend
-    environment:
-      - VITE_API_BASE=http://localhost
     volumes:
       - react_build:/app/build
     command: echo "React build complete."

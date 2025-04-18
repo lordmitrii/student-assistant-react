@@ -129,8 +129,8 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Login/logout URLs
-LOGIN_REDIRECT_URL = '/redirect-to-home/'
-LOGOUT_REDIRECT_URL = '/redirect-to-home/'
+LOGIN_REDIRECT_URL = '/api/redirect-to-home/'
+LOGOUT_REDIRECT_URL = '/api/redirect-to-home/'
 
 TEMPLATES = [
     {
