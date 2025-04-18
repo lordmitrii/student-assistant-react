@@ -1,6 +1,15 @@
 version: '3.9'
 
 services:
+  db:
+      image: postgres:16
+      restart: always
+      volumes:
+        - postgres_data:/var/lib/postgresql/data/
+      environment:
+        POSTGRES_DB: student_assistant
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
   backend:
     build:
       context: ./backend
@@ -11,7 +20,12 @@ services:
       - "8000"
     environment:
       - FRONTEND_URL=http://localhost
+      - DB_NAME=student_assistant
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
     depends_on:
+      - db
       - frontend
 
   frontend:
@@ -35,3 +49,4 @@ services:
 volumes:
   static_volume:
   react_build:
+  postgres_data:
